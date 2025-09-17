@@ -2020,12 +2020,7 @@ const DATA = [
   },
   {
     "id": 47,
-    "title": "<p>第47問 磁気共鳴コンピューター断層撮影（MRI撮影）について、正しい組み合わせを1つ選びなさい。\n\n<br>
-　　　　　　　　　1　3テスラ以上の機器による場合\n　<br>
-　　　　　　　　　　　　　　イ　共同利用施設において行われる場合【ア】点\n　<br>
-　　　　　　　　　　　　　　　　その他の場合【イ】点\n\n<br>
-　　　　　　　　　2　1.5テスラ以上3テスラ未満の機器による場合【ウ】点\n\n<br>
-　　　　　　　　　3　「1」又は「2」以外の場合【エ】点</p>",
+    "title": "第47問 磁気共鳴コンピューター断層撮影（MRI撮影）について、正しい組み合わせを1つ選びなさい。\n\n1　3テスラ以上の機器による場合\nイ　共同利用施設において行われる場合【ア】点\nその他の場合【イ】点\n\n2　1.5テスラ以上3テスラ未満の機器による場合【ウ】点\n\n3　「1」又は「2」以外の場合【エ】点",
     "instruction": "",
     "type": "select-incorrect",
     "options": [
@@ -2200,35 +2195,54 @@ const DATA = [
 function render() {
   const app = document.getElementById('app');
   app.innerHTML = "";
+
   DATA.forEach(q => {
     const card = document.createElement('section');
     card.className = 'card';
+
+    // ────────────── 問題文（title） ──────────────
     const h = document.createElement('div');
     h.className = 'title';
-    h.textContent = (q.title || '').replace(/\s+/g,' ');
+    // ▼ textContent → innerHTML に変更し \n を <br> に変換
+    h.innerHTML = (q.title || '').replace(/\n/g,'<br>');
+    card.appendChild(h);
+
     const instr = document.createElement('div');
     instr.className = 'instruction';
-    instr.textContent = q.instruction || (q.type==='select-incorrect' ? '誤っている選択肢をすべて選んでください。' : '正しい選択肢をすべて選んでください。');
-    card.appendChild(h);
+    instr.textContent = q.instruction || 
+      (q.type==='select-incorrect' 
+        ? '誤っている選択肢をすべて選んでください。'
+        : '正しい選択肢をすべて選んでください。'
+      );
     card.appendChild(instr);
+
+    // ────────────── 選択肢 ──────────────
     const form = document.createElement('div');
     q.options.forEach((o, i) => {
       const opt = document.createElement('label');
       opt.className = 'opt';
       const cb = document.createElement('input');
       cb.type = 'checkbox';
-      cb.name = `q_{q.id}`;
+      cb.name = `q_${q.id}`;
       cb.value = i;
+
       const span = document.createElement('div');
-      const safeText = (o.text || '').replace(/</g,'&lt;');
+      // ▼ \n を <br> に変換して改行表示
+      const safeText = (o.text || '')
+        .replace(/</g,'&lt;')
+        .replace(/\n/g,'<br>');
       span.innerHTML = `<strong>${o.label}.</strong> ${safeText}`;
+
       opt.appendChild(cb);
       opt.appendChild(span);
       form.appendChild(opt);
     });
     card.appendChild(form);
+
+    // ────────────── 採点ボタン ──────────────
     const controls = document.createElement('div');
     controls.className = 'controls';
+
     const btn = document.createElement('button');
     btn.textContent = '採点';
     btn.onclick = () => {
@@ -2238,48 +2252,58 @@ function render() {
         const selected = cb.checked;
         const isCorrect = !!o.correct;
         labels[idx].classList.remove('correct','incorrect','sel');
-        if(selected){
-          labels[idx].classList.add(isCorrect ? 'correct':'incorrect','sel');
+        if (selected) {
+          labels[idx].classList.add(isCorrect ? 'correct' : 'incorrect', 'sel');
         }
         let exp = labels[idx].querySelector('.explain');
-        if(!exp && (isCorrect || selected) && (o.explanation_html || o.explanation)){
+        if (!exp && (isCorrect || selected) && (o.explanation_html || o.explanation)) {
           exp = document.createElement('div');
           exp.className = 'explain';
-          if(o.explanation_html){
+          if (o.explanation_html) {
             exp.innerHTML = o.explanation_html;
-          }else{
+          } else {
             exp.textContent = o.explanation;
           }
           labels[idx].appendChild(exp);
         }
       });
-      const exact = q.options.every((o, idx)=>{
+      const exact = q.options.every((o, idx) => {
         const selected = form.querySelector(`input[value="${idx}"]`).checked;
         return (!!o.correct) === selected;
       });
-      const scoreArea = card.querySelector('.score') || (()=>{const s=document.createElement('div'); s.className='score'; card.appendChild(s); return s;})();
+      const scoreArea = card.querySelector('.score') 
+        || (() => {
+            const s = document.createElement('div');
+            s.className = 'score';
+            card.appendChild(s);
+            return s;
+          })();
       scoreArea.textContent = exact ? '✅ 正解！' : '❌ 不正解';
     };
+
     const btnReset = document.createElement('button');
     btnReset.textContent = 'リセット';
     btnReset.className = 'secondary';
     btnReset.onclick = () => {
-      form.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
-      form.querySelectorAll('.opt').forEach(o=>o.classList.remove('correct','incorrect','sel'));
-      form.querySelectorAll('.explain').forEach(e=>e.remove());
-      const s = card.querySelector('.score'); if(s) s.remove();
+      form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      form.querySelectorAll('.opt').forEach(o => o.classList.remove('correct','incorrect','sel'));
+      form.querySelectorAll('.explain').forEach(e => e.remove());
+      const s = card.querySelector('.score'); if (s) s.remove();
     };
+
     controls.appendChild(btn);
     controls.appendChild(btnReset);
     card.appendChild(controls);
     app.appendChild(card);
   });
+
   const note = document.createElement('div');
   note.className = 'footer';
   note.innerHTML = '※ 自動抽出の都合で一部の肢が欠落・誤判定する可能性があります。原資料に照らして随時修正してください。';
   app.appendChild(note);
 }
 render();
+
 </script>
 </body>
 </html>
