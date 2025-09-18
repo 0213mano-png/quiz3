@@ -2205,16 +2205,7 @@ function render() {
     h.className = 'title';
     // ▼ textContent → innerHTML に変更し \n を <br> に変換
     h.innerHTML = (q.title || '').replace(/\n/g,'<br>');
-    card.appendChild(h);
-
-    const instr = document.createElement('div');
-    instr.className = 'instruction';
-    instr.textContent = q.instruction || 
-      (q.type==='select-incorrect' 
-        ? '誤っている選択肢をすべて選んでください。'
-        : '正しい選択肢をすべて選んでください。'
-      );
-    card.appendChild(instr);
+    card.appendChild(h)
 
     // ────────────── 選択肢 ──────────────
     const form = document.createElement('div');
