@@ -60,7 +60,7 @@ button{touch-action:manipulation}
 }
 .opt:active{transform:scale(.995)}
 .opt input{margin:4px 0 0;width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent2)}
-.opt>div{white-space:pre-wrap;font-size:15px;line-height:1.65;overflow-wrap:anywhere}
+.opt>div{white-space:normal;font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;line-break:strict}
 .opt:has(input:checked){border-color:#818cf8;background:#f5f7ff;box-shadow:0 0 0 1px rgba(99,102,241,.08)}
 .opt.correct.sel{border-color:#22c55e;background:var(--okbg)}
 .opt.incorrect.sel{border-color:#ef4444;background:var(--ngbg)}
@@ -192,6 +192,12 @@ function esc(s){
   });
 }
 
+function cleanOptionText(s){
+  // PDFの紙面折り返し由来の改行・インデントを連結して、
+  // スマホ幅ではブラウザに自然な位置で折り返させる。
+  return String(s||'').replace(/\n\s*/g,'').replace(/[ \t]{2,}/g,' ');
+}
+
 let currentIndex=0;
 const state=DATA.map(function(){return {graded:false,correct:null};});
 
@@ -251,7 +257,7 @@ function render(){
         });
 
         const span=document.createElement('div');
-        span.textContent=text;
+        span.textContent=cleanOptionText(text);
         label.appendChild(cb);
         label.appendChild(span);
         form.appendChild(label);
@@ -275,7 +281,7 @@ function render(){
         });
 
         const span=document.createElement('div');
-        span.innerHTML='<strong>'+(idx+1)+'.</strong> '+esc(text);
+        span.innerHTML='<strong>'+(idx+1)+'.</strong> '+esc(cleanOptionText(text));
         label.appendChild(r);
         label.appendChild(span);
         form.appendChild(label);
@@ -414,8 +420,8 @@ function shuffledCopy(items){
 function statementTextWithoutPrefix(q,idx){
   const original=q.options[idx]||'';
   const letter=(q.option_labels&&q.option_labels[idx])||'';
-  if(letter && original.startsWith(letter)) return original.slice(letter.length).replace(/^\s+/,'');
-  return original.replace(/^[ア-ン]\s+/,'');
+  if(letter && original.startsWith(letter)) return cleanOptionText(original.slice(letter.length).replace(/^\s+/,''));
+  return cleanOptionText(original.replace(/^[ア-ン]\s+/,''));
 }
 
 function setQuestionShuffle(q,card,enabled){
@@ -430,9 +436,9 @@ function setQuestionShuffle(q,card,enabled){
     const idx=Number(opt.dataset.originalIndex);
     const span=opt.querySelector('div');
     if(q.mode==='statements'){
-      span.textContent=enabled?statementTextWithoutPrefix(q,idx):(q.options[idx]||'');
+      span.textContent=enabled?statementTextWithoutPrefix(q,idx):cleanOptionText(q.options[idx]||'');
     }else{
-      span.innerHTML=enabled?esc(q.options[idx]||''):'<strong>'+(idx+1)+'.</strong> '+esc(q.options[idx]||'');
+      span.innerHTML=enabled?esc(cleanOptionText(q.options[idx]||'')):'<strong>'+(idx+1)+'.</strong> '+esc(cleanOptionText(q.options[idx]||''));
     }
   });
   form.dataset.shuffled=enabled?'true':'false';
