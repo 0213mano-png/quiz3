@@ -5,128 +5,408 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>主任技師等任用候補者選考 模擬試験</title>
 <style>
-:root{--bg:#f7f8fb;--card:#fff;--border:#e6e8ef;--text:#111827;--muted:#64748b;--ok:#16a34a;--ng:#dc2626;--accent:#3730a3;}
-*{box-sizing:border-box} body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;line-height:1.65;margin:0;background:var(--bg);color:var(--text)}
-header{background:white;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border)}
-.wrap{max-width:1000px;margin:0 auto;padding:18px}.header-row{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-h1{font-size:22px;margin:4px 0}.sub{font-size:13px;color:var(--muted)}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin:16px 0}.title{font-weight:700;margin-bottom:14px;white-space:pre-wrap}.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:12px;margin:8px 0;background:#fafbff;cursor:pointer}.opt:hover{background:#f5f7ff}.opt input{margin-top:5px}.opt>div{white-space:pre-wrap}.opt.correct.sel{border-color:#22c55e;background:#f0fff4}.opt.incorrect.sel{border-color:#ef4444;background:#fff1f2}.opt.correct-answer{border-color:#86efac;background:#f7fff9}.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{padding:9px 14px;border-radius:10px;border:1px solid #cbd5e1;background:#111827;color:white;cursor:pointer}button.secondary{background:white;color:#111827}.score{font-weight:700;margin-top:10px}.explain{font-size:14px;color:#334155;border-left:3px solid #cbd5e1;padding:10px 12px;margin-top:12px;background:#f8fafc;border-radius:0 10px 10px 0}.answerline{margin-bottom:8px}.diffblock{margin:10px 0;padding-top:8px;border-top:1px dashed #cbd5e1}.difflabel{font-weight:700;margin-bottom:3px}.correctline{margin-top:5px;color:#1f2937}.ins{color:#dc2626;font-weight:700}del{color:#64748b;text-decoration-color:#ef4444;text-decoration-thickness:2px}.footer{color:#6b7280;font-size:13px;margin:24px 0}.notice{font-size:12px;color:#64748b;margin-top:4px}.shuffle-toggle{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;user-select:none}.shuffle-toggle input{width:18px;height:18px;cursor:pointer}
-@media(max-width:640px){.wrap{padding:12px}.card{padding:15px}.title{font-size:15px}}
+:root{
+  --bg:#f4f6fa;--card:#fff;--border:#e3e7ef;--text:#111827;--muted:#64748b;
+  --ok:#15803d;--okbg:#f0fdf4;--ng:#dc2626;--ngbg:#fff1f2;--accent:#3730a3;--accent2:#4f46e5;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  line-height:1.65;margin:0;background:var(--bg);color:var(--text);
+  padding-bottom:calc(88px + env(safe-area-inset-bottom));
+}
+button,input{font:inherit}
+button{touch-action:manipulation}
+.wrap{width:min(100%,900px);margin:0 auto;padding-left:16px;padding-right:16px}
+
+.topbar{
+  background:rgba(255,255,255,.96);position:sticky;top:0;z-index:20;
+  border-bottom:1px solid var(--border);backdrop-filter:blur(10px);
+}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:10px;padding-bottom:8px}
+.brand h1{font-size:17px;line-height:1.3;margin:0;font-weight:800}
+.brand .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.icon-button,.ghost-button{
+  border:1px solid var(--border);background:#fff;color:#1f2937;border-radius:12px;
+  min-height:42px;padding:8px 12px;font-weight:700;cursor:pointer
+}
+.progress-wrap{padding-bottom:8px}
+.progress-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:700;margin-bottom:6px}
+.progress-row span:last-child{color:var(--muted);font-weight:600}
+.progress-track{height:7px;background:#e9edf5;border-radius:999px;overflow:hidden}
+.progress-bar{height:100%;width:2%;background:var(--accent2);border-radius:999px;transition:width .2s ease}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:2px;padding-bottom:10px}
+.shuffle-toggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
+.shuffle-toggle input{width:19px;height:19px;cursor:pointer}
+
+#app{padding-top:12px;padding-bottom:18px}
+.card{
+  display:none;background:var(--card);border:1px solid var(--border);border-radius:18px;
+  padding:18px 16px;box-shadow:0 4px 18px rgba(15,23,42,.05);margin:0
+}
+.card.active{display:block}
+.question-chip{
+  display:inline-flex;align-items:center;border-radius:999px;background:#eef2ff;color:#3730a3;
+  padding:4px 10px;font-size:12px;font-weight:800;margin-bottom:10px
+}
+.title{font-weight:750;font-size:16px;line-height:1.75;margin-bottom:16px;white-space:pre-wrap}
+.question-options{display:grid;gap:10px}
+.opt{
+  display:flex;gap:12px;align-items:flex-start;padding:14px 14px;border:1.5px solid var(--border);
+  border-radius:14px;background:#fff;cursor:pointer;min-height:54px;transition:.12s ease;
+  -webkit-tap-highlight-color:transparent
+}
+.opt:active{transform:scale(.995)}
+.opt input{margin:4px 0 0;width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent2)}
+.opt>div{white-space:pre-wrap;font-size:15px;line-height:1.65;overflow-wrap:anywhere}
+.opt:has(input:checked){border-color:#818cf8;background:#f5f7ff;box-shadow:0 0 0 1px rgba(99,102,241,.08)}
+.opt.correct.sel{border-color:#22c55e;background:var(--okbg)}
+.opt.incorrect.sel{border-color:#ef4444;background:var(--ngbg)}
+.opt.correct-answer{border-color:#86efac;background:#f7fff9}
+
+.question-reset-row{display:flex;justify-content:flex-end;margin-top:12px}
+.question-reset{
+  border:0;background:transparent;color:var(--muted);padding:8px 4px;font-size:13px;font-weight:700;cursor:pointer
+}
+.score{
+  font-weight:850;font-size:17px;margin-top:16px;padding:12px 14px;border-radius:12px;background:#f8fafc
+}
+.explain-details{margin-top:10px;border:1px solid var(--border);border-radius:14px;background:#f8fafc;overflow:hidden}
+.explain-details summary{list-style:none;cursor:pointer;padding:13px 14px;font-weight:800;font-size:14px}
+.explain-details summary::-webkit-details-marker{display:none}
+.explain-details summary::after{content:"＋";float:right;color:var(--muted);font-size:18px;line-height:1}
+.explain-details[open] summary::after{content:"−"}
+.explain{font-size:14px;color:#334155;padding:0 14px 14px;overflow-wrap:anywhere}
+.answerline{margin:0 0 8px;font-size:15px}
+.diffblock{margin:10px 0;padding-top:9px;border-top:1px dashed #cbd5e1}
+.difflabel{font-weight:800;margin-bottom:4px}
+.correctline{margin-top:6px;color:#1f2937}
+.ins{color:#dc2626;font-weight:800}
+del{color:#64748b;text-decoration-color:#ef4444;text-decoration-thickness:2px}
+.footer{color:#6b7280;font-size:12px;margin:16px 2px 0}
+
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(255,255,255,.98);border-top:1px solid var(--border);
+  padding:10px max(12px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-right));
+  box-shadow:0 -5px 20px rgba(15,23,42,.07)
+}
+.bottom-nav-inner{width:min(100%,900px);margin:0 auto;display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px}
+.nav-btn{
+  min-height:48px;border-radius:13px;border:1px solid var(--border);font-weight:800;cursor:pointer;
+  background:#fff;color:#1f2937
+}
+.nav-btn.primary{background:#111827;color:#fff;border-color:#111827}
+.nav-btn:disabled{opacity:.38;cursor:default}
+
+.overlay{
+  position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.46);display:none;align-items:flex-end;
+}
+.overlay.open{display:flex}
+.sheet{
+  width:100%;max-height:82vh;background:#fff;border-radius:22px 22px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));
+  overflow:auto;box-shadow:0 -12px 34px rgba(15,23,42,.18)
+}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-16px;background:#fff;padding:8px 0 12px;z-index:2}
+.sheet-head h2{font-size:17px;margin:0}
+.question-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.qjump{
+  aspect-ratio:1;border-radius:12px;border:1px solid var(--border);background:#fff;color:#1f2937;
+  font-weight:800;cursor:pointer;position:relative
+}
+.qjump.answered{background:#eef2ff;border-color:#c7d2fe}
+.qjump.correct{background:#ecfdf3;border-color:#86efac;color:#166534}
+.qjump.wrong{background:#fff1f2;border-color:#fda4af;color:#9f1239}
+.qjump.current{outline:2px solid var(--accent2);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);margin:12px 0}
+.legend span{display:flex;align-items:center;gap:5px}
+.dot{width:10px;height:10px;border-radius:3px;border:1px solid var(--border);background:#fff}
+.dot.answered{background:#eef2ff;border-color:#c7d2fe}.dot.correct{background:#ecfdf3;border-color:#86efac}.dot.wrong{background:#fff1f2;border-color:#fda4af}
+
+@media(min-width:700px){
+  body{padding-bottom:92px}
+  .brand h1{font-size:20px}
+  .card{padding:26px 28px}
+  .title{font-size:18px}
+  .opt>div{font-size:16px}
+  .question-grid{grid-template-columns:repeat(10,1fr)}
+  .sheet{width:min(760px,calc(100% - 40px));margin:0 auto 20px;border-radius:22px;max-height:75vh}
+  .overlay{align-items:center}
+}
+
 </style>
 </head>
+
 <body>
-<header><div class="wrap"><div class="header-row"><div><h1>主任技師等任用候補者選考 模擬試験</h1><div class="sub">自動採点・解答資料に基づく解説表示</div></div><label class="shuffle-toggle"><input type="checkbox" id="globalShuffle"> 選択肢をシャッフル</label></div></div></header>
+<header class="topbar">
+  <div class="wrap header-row">
+    <div class="brand">
+      <h1>主任技師等任用候補者選考</h1>
+      <div class="sub">模擬試験</div>
+    </div>
+    <button type="button" class="icon-button" id="questionListBtn">問題一覧</button>
+  </div>
+  <div class="wrap progress-wrap">
+    <div class="progress-row"><span id="progressText">問 1 / 50</span><span id="answeredText">回答 0 / 50</span></div>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+  </div>
+  <div class="wrap toolbar">
+    <label class="shuffle-toggle"><input type="checkbox" id="globalShuffle"> 選択肢をシャッフル</label>
+    <button type="button" class="ghost-button" id="resetAllBtn">全てリセット</button>
+  </div>
+</header>
+
 <main class="wrap" id="app"></main>
+
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button type="button" class="nav-btn" id="prevBtn">← 前へ</button>
+    <button type="button" class="nav-btn primary" id="gradeBtn">採点</button>
+    <button type="button" class="nav-btn" id="nextBtn">次へ →</button>
+  </div>
+</div>
+
+<div class="overlay" id="questionOverlay" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="questionSheetTitle">
+    <div class="sheet-head">
+      <h2 id="questionSheetTitle">問題一覧</h2>
+      <button type="button" class="icon-button" id="closeQuestionListBtn">閉じる</button>
+    </div>
+    <div class="legend">
+      <span><i class="dot"></i>未回答</span>
+      <span><i class="dot answered"></i>回答済み</span>
+      <span><i class="dot correct"></i>正解</span>
+      <span><i class="dot wrong"></i>不正解</span>
+    </div>
+    <div class="question-grid" id="questionGrid"></div>
+  </div>
+</div>
+
 <script>
 const DATA=[{"id":1,"body":"第 1 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   独立行政法人国立病院機構法（平成１４年法律第１９１号）に基づく、特定独立行政法人と\n    して、 平成１６年４月１日に設立され、全国１４０の病院（令和６年４月１日現在）を一つ\n    の法人として運営している。","イ   地域における医療に一層貢献するために、都道府県が策定する医療計画を踏まえ、「がん、精\n    神疾患、脳卒中、急性心筋梗塞、糖尿病」の 5 疾病および救急医療、災害医療、へき地の医\n    療、周産期医療、小児医療（小児救急を含む）、地域医療の 6 事業を中心に、地域連携クリテ\n    ィカルパスを始め地域の医療機関との連携強化を図っている。","ウ   重症心身障害、筋ジス・神経難病、精神、結核・呼吸器、エイズなど民間では体制の整備、\n    経験、または不採算とされることからアプローチが困難な分野についても、患者・家族が安\n    心して治療・療養ができるよう、各地域の国立病院機構がセーフティネットとして支えてい\n    る。","エ   歴史的・社会的経緯等により民間等での対応が困難な医療や高度先駆的な医療については、\n    国が医療政策として担うべきものであり、国立病院機構（NHO）、国立高度専門医療研究セ\n    ンター（NC）及び国立健康危機管理研究機構（JIHS）において着実に実施している。","オ   5 法人はそれぞれ悪性新生物、精神・神経疾患、感染症、成育に係る疾患、加齢に係る疾患\n    の調査、研究及び技術の開発、これらの業務に密接に関連する医療の提供、技術者の研修、\n    医療政策の提言等の業務を行っている。"],"correct":3,"correct_text":"3 イ、オ","changed":[["イ","地域における医療に一層貢献するために、都道府県が策定する医療計画を踏まえ、「がん、精 神疾患、脳卒中、急性心筋梗塞、糖尿病」の 5 疾病および救急医療、災害医療、へき地の医 療、周産期医療、小児医療（小児救急を含む）、地域医療の 6 事業を中心に、地域連携クリテ ィカルパスを始め地域の医療機関との連携強化を図っている。","地域における医療に一層貢献するために、都道府県が策定する医療計画を踏まえ、「がん、精 神疾患、脳卒中、急性心筋梗塞、糖尿病」の 5 疾病および救急医療、災害医療、へき地の医 療、周産期医療、小児医療（小児救急を含む）、新興感染症発生・まん延時における医療の 6 事業を中心に、地域連携クリティカルパスを始め地域の医療機関との連携強化を図ってい る。"],["オ","5 法人はそれぞれ悪性新生物、精神・神経疾患、感染症、成育に係る疾患、加齢に係る疾患 の調査、研究及び技術の開発、これらの業務に密接に関連する医療の提供、技術者の研修、 医療政策の提言等の業務を行っている。","5 法人はそれぞれ悪性新生物、精神・神経疾患、循環器病、成育に係る疾患、加齢に係る疾 患の調査、研究及び技術の開発、これらの業務に密接に関連する医療の提供、技術者の研 修、医療政策の提言等の業務を行っている。"]],"red":["イ","新興感染症発生・まん延時における医療","オ","循環器病","3 イ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">地域における医療に一層貢献するために、都道府県が策定する医療計画を踏まえ、「がん、精 神疾患、脳卒中、急性心筋梗塞、糖尿病」の 5 疾病および救急医療、災害医療、へき地の医 療、周産期医療、小児医療（小児救急を含む）、<del>地域</del><span class=\"ins\">新興感染症発生・まん延時における</span>医療の 6 事業を中心に、地域連携クリテ<del> </del>ィカルパスを始め地域の医療機関との連携強化を図ってい<span class=\"ins\"> </span>る。</div><div class=\"correctline\"><strong>正しい文：</strong> 地域における医療に一層貢献するために、都道府県が策定する医療計画を踏まえ、「がん、精 神疾患、脳卒中、急性心筋梗塞、糖尿病」の 5 疾病および救急医療、災害医療、へき地の医 療、周産期医療、小児医療（小児救急を含む）、新興感染症発生・まん延時における医療の 6 事業を中心に、地域連携クリティカルパスを始め地域の医療機関との連携強化を図ってい る。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">5 法人はそれぞれ悪性新生物、精神・神経疾患、<del>感染症</del><span class=\"ins\">循環器病</span>、成育に係る疾患、加齢に係る疾<span class=\"ins\"> </span>患<del> </del>の調査、研究及び技術の開発、これらの業務に密接に関連する医療の提供、技術者の研<span class=\"ins\"> </span>修、<del> </del>医療政策の提言等の業務を行っている。</div><div class=\"correctline\"><strong>正しい文：</strong> 5 法人はそれぞれ悪性新生物、精神・神経疾患、循環器病、成育に係る疾患、加齢に係る疾 患の調査、研究及び技術の開発、これらの業務に密接に関連する医療の提供、技術者の研 修、医療政策の提言等の業務を行っている。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","オ"],"required":2},{"id":2,"body":"第 2 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   国立健康危機管理研究機構設立に伴い、令和 7 年 3 月 31 日をもって国立国際医療研究セン\n    ターは解散した。","イ   平成 ２２年４月１日に国立高度専門医療センターの６つの組織は非特定独立行政法人に移行\n    し、総称を「国立高度専門医療研究センター」とし、各センターはそれぞれ独立した法人に\n    移行（１センター１法人と）し、職員の身分も公務員型となった。","ウ   第一期中期目標期間、第二期中期目標期間ともに、「独法化のねらいや期待に応え、医療・経\n    営の両面において中期目標の水準に対し、大きな成果を上げている」と評価を受けた。","エ   国立ハンセン病療養所は、２００９年４月の「ハンセン病問題の解決の促進に関する法律」\n    施行の趣旨を踏まえ、入所者の療養の質の向上を図り、入所者が地域社会と共生しつつ、良\n    好かつ平穏な療養生活を営むことができることを目的とする厚生労働省所管の施設等機関で\n    ある。","オ   高度成長期における国立療養所では、児童福祉対策の拡充に伴い、慢性心疾患及び、先天性\n    代謝異常の受け入れ等各種特殊疾病対策を推進した。"],"correct":3,"correct_text":"3 イ、オ","changed":[["イ","平成 ２２年４月１日に国立高度専門医療センターの６つの組織は非特定独立行政法人に移行 し、総称を「国立高度専門医療研究センター」とし、各センターはそれぞれ独立した法人に 移行（１センター１法人と）し、職員の身分も公務員型となった。","平成 ２２年４月１日に国立高度専門医療センターの６つの組織は非特定独立行政法人に移行 し、総称を「国立高度専門医療研究センター」とし、各センターはそれぞれ独立した法人に 移行（１センター１法人と）し、職員の身分も非公務員型となった。"],["オ","高度成長期における国立療養所では、児童福祉対策の拡充に伴い、慢性心疾患及び、先天性 代謝異常の受け入れ等各種特殊疾病対策を推進した。","高度成長期における国立療養所では、児童福祉対策の拡充に伴い、重度心身障害児（者）及 び、進行性筋萎縮症児（者）の受け入れ等各種特殊疾病対策を推進した。"]],"red":["イ","非公務員型","オ","重度心身障害児（者）及","び、進行性筋萎縮症児（者）","3 イ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">平成 ２２年４月１日に国立高度専門医療センターの６つの組織は非特定独立行政法人に移行 し、総称を「国立高度専門医療研究センター」とし、各センターはそれぞれ独立した法人に 移行（１センター１法人と）し、職員の身分も<span class=\"ins\">非</span>公務員型となった。</div><div class=\"correctline\"><strong>正しい文：</strong> 平成 ２２年４月１日に国立高度専門医療センターの６つの組織は非特定独立行政法人に移行 し、総称を「国立高度専門医療研究センター」とし、各センターはそれぞれ独立した法人に 移行（１センター１法人と）し、職員の身分も非公務員型となった。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">高度成長期における国立療養所では、児童福祉対策の拡充に伴い、<del>慢性</del><span class=\"ins\">重度</span>心<del>疾患</del><span class=\"ins\">身障害児（者）</span>及<span class=\"ins\"> </span>び、<del>先天</del><span class=\"ins\">進行</span>性<del> 代謝異常</del><span class=\"ins\">筋萎縮症児（者）</span>の受け入れ等各種特殊疾病対策を推進した。</div><div class=\"correctline\"><strong>正しい文：</strong> 高度成長期における国立療養所では、児童福祉対策の拡充に伴い、重度心身障害児（者）及 び、進行性筋萎縮症児（者）の受け入れ等各種特殊疾病対策を推進した。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","オ"],"required":2},{"id":3,"body":"第 3 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   任命権者は、試用期間中の職員について勤務実績の不良なこと、心身に故障があること その\n    他の事実に基づいて国立病院機構に引き続き勤務させておくことが適当でないと認める場合\n    には、当該職員を何時でも降任させ、又は解雇することができる。","イ   試用期間の開始後６月間において実際に勤務した日数が 90 日に満たない職員については、\n    その日数が 60 日に達するまで試用期間は引き続くが、試用期間は、当該試用期間の開始後\n    １年を超えないものとする。","ウ   「降任」とは、任命権者が職員をその職員が現に就いている職務より下位の職制上の段階に\n    属する職務に就かせることをいい、職員から書面による同意を得た場合のみ降任させること\n    ができる。","エ 「昇任」とは、任命権者が職員をその職員が現に就いている職務より上位の職制上の段階に属\n   する職務に就かせることをいう。","オ 任命権者は、職員を採用する場合には、競争試験及び選考により採用するものとする。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","試用期間の開始後６月間において実際に勤務した日数が 90 日に満たない職員については、 その日数が 60 日に達するまで試用期間は引き続くが、試用期間は、当該試用期間の開始後 １年を超えないものとする。","試用期間の開始後６月間において実際に勤務した日数が 90 日に満たない職員については、 その日数が 9０日に達するまで試用期間は引き続くが、試用期間は、当該試用期間の開始後 １年を超えないものとする。"],["ウ","「降任」とは、任命権者が職員をその職員が現に就いている職務より下位の職制上の段階に 属する職務に就かせることをいい、職員から書面による同意を得た場合のみ降任させること ができる。","「降任」とは、任命権者が職員をその職員が現に就いている職務より下位の職制上の段階に 属する職務に就かせることをいい、職員から書面による同意を得た場合も降任させることが できる。"]],"red":["イ","90 日","9０日","ウ","職員から書面による同意を得た場合も","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">試用期間の開始後６月間において実際に勤務した日数が 90 日に満たない職員については、 その日数が <del>60 </del><span class=\"ins\">9０</span>日に達するまで試用期間は引き続くが、試用期間は、当該試用期間の開始後 １年を超えないものとする。</div><div class=\"correctline\"><strong>正しい文：</strong> 試用期間の開始後６月間において実際に勤務した日数が 90 日に満たない職員については、 その日数が 9０日に達するまで試用期間は引き続くが、試用期間は、当該試用期間の開始後 １年を超えないものとする。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">「降任」とは、任命権者が職員をその職員が現に就いている職務より下位の職制上の段階に 属する職務に就かせることをいい、職員から書面による同意を得た場合<del>のみ</del><span class=\"ins\">も</span>降任させること<span class=\"ins\">が</span> <del>が</del>できる。</div><div class=\"correctline\"><strong>正しい文：</strong> 「降任」とは、任命権者が職員をその職員が現に就いている職務より下位の職制上の段階に 属する職務に就かせることをいい、職員から書面による同意を得た場合も降任させることが できる。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":4,"body":"第 4 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   「転任」とは、職員をその職員が現に就いている職務と任命権者を同じくする他の職員の職\n    務に就かせることであって、昇任、降任に該当しないものをいう。","イ   「配置換」とは、職員をその職員が現に就いている職務と任命権者を異にする他の職員の職\n    務に就かせることであって、昇任、降任に該当しないものをいう。","ウ   休職は、本人の意にかかわりなく一方的になされるものであり、職員にとって不利益な処分\n    となる場合が多いため、長期の病気休暇の場合や刑事事件に関し起訴された場合など一定の\n    理由の場合だけに限定して、職員の身分保障を期している。","エ   心身の故障のため長期休養を要する場合、 3 年を超えない範囲で休職することができる。","オ   「解雇」とは、職員をその意に反して退職させることをいい、解雇される理由として、心身\n    の故障のため、職務の遂行に支障があり、又はこれに堪えない場合や禁錮以上の刑に処せら\n    れ、その執行を終わるまで又は執行を受けることがなくなるまでの者等が該当する。"],"correct":1,"correct_text":"１ ア、イ","changed":[["ア","「転任」とは、職員をその職員が現に就いている職務と任命権者を同じくする他の職員の職 務に就かせることであって、昇任、降任に該当しないものをいう。","「転任」とは、職員をその職員が現に就いている職務と任命権者を異にする他の職員の職務 に就かせることであって、昇任、降任に該当しないものをいう。"],["イ","「配置換」とは、職員をその職員が現に就いている職務と任命権者を異にする他の職員の職 務に就かせることであって、昇任、降任に該当しないものをいう。","「配置換」とは、職員をその職員が現に就いている職務と任命権者を同じくする他の職員の 職務に就かせることであって、昇任、降任に該当しないものをいう。"]],"red":["ア","異にする","イ","同じくする","１ ア、イ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ア、イ</div><div class=\"diffblock\"><div class=\"difflabel\">ア</div><div class=\"diffline\">「転任」とは、職員をその職員が現に就いている職務と任命権者を<del>同じく</del><span class=\"ins\">異に</span>する他の職員の職<span class=\"ins\">務</span> <del>務</del>に就かせることであって、昇任、降任に該当しないものをいう。</div><div class=\"correctline\"><strong>正しい文：</strong> 「転任」とは、職員をその職員が現に就いている職務と任命権者を異にする他の職員の職務 に就かせることであって、昇任、降任に該当しないものをいう。</div></div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">「配置換」とは、職員をその職員が現に就いている職務と任命権者を<del>異に</del><span class=\"ins\">同じく</span>する他の職員の<span class=\"ins\"> </span>職<del> </del>務に就かせることであって、昇任、降任に該当しないものをいう。</div><div class=\"correctline\"><strong>正しい文：</strong> 「配置換」とは、職員をその職員が現に就いている職務と任命権者を同じくする他の職員の 職務に就かせることであって、昇任、降任に該当しないものをいう。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ア","イ"],"required":2},{"id":5,"body":"第 5 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 従前の定年は、医師及び歯科医師は年齢６５年、医師以外の副院長は年齢６３年、それ以外の\n  職員は年齢６０年であったが、令和７年の就業規則改正により定年は一律、年齢６５年となっ\n  た。","イ   再雇用制度とは定年に達した職員を、定年退職日の翌日から起算して１年を超えない範囲内\n    で期限を定め、その職員を引き続いて勤務させることができる制度である。","ウ   勤務延長制度とは定年退職者等を、従前の勤務実績等に基づく選考により、１年を超えない\n    範囲内で任期を定め、職務に就かせる制度である。","エ   非常勤職員とは１週間あたりの勤務時間が３２時間を超えない範囲内で、かつ、一事業年度\n    を超えない任期を定めて採用する者をいう。","オ   国立病院機構における雇用期間（任期）を定めて採用された期間を通算した期間が 3 年を超える期間\n    職員又は非常勤職員（有期雇用職員としての採用回数が２回以上である者に限る。）が、雇用期間\n    （任期）の 満了する日の３０日前までに雇用期間（任期）の定めのない採用への転換を申し出たと\n    きは、当該雇用期間（任期）の満了する日の翌日から雇用期間（任期）の定めのない採用となる。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["ア","従前の定年は、医師及び歯科医師は年齢６５年、医師以外の副院長は年齢６３年、それ以外の 職員は年齢６０年であったが、令和７年の就業規則改正により定年は一律、年齢６５年となっ た。","定年は、医師及び歯科医師は年齢６５年、医師以外の副院長は年齢６３年、それ以外の職員 は年齢６０年とする。なお、医師及び歯科医師を除く常勤職員であって、令和８年度に６０ 歳の定年年齢に達する職員から、段階的に定年年齢の引上げを行うこととなっている。"],["イ","再雇用制度とは定年に達した職員を、定年退職日の翌日から起算して１年を超えない範囲内 で期限を定め、その職員を引き続いて勤務させることができる制度である。","勤務延長制度とは定年に達した職員を、定年退職日の翌日から起算して１年を超えない範囲 内で期限を定め、その職員を引き続いて勤務させることができる制度である。"],["ウ","勤務延長制度とは定年退職者等を、従前の勤務実績等に基づく選考により、１年を超えない 範囲内で任期を定め、職務に就かせる制度である。","再雇用制度とは定年退職者等を、従前の勤務実績等に基づく選考により、１年を超えない範 囲内で任期を定め、職務に就かせる制度である。"]],"red":["イ","勤務延長制度とは","ウ","再雇用制度とは","3","国立病院機構における雇用期間（任期）を定めて採用された期間を通算した期間が","年を超える期間","職員又は非常勤職員（有期雇用職員としての採用回数が２回以上である者に限る。）が、雇用期間","（任期）の","満了する日の３０日前までに雇用期間（任期）の定めのない採用への転換を申し出たと","きは、当該雇用期間（任期）の満了する日の翌日から雇用期間（任期）の定めのない採用となる。","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\"><del>再雇用</del><span class=\"ins\">勤務延長</span>制度とは定年に達した職員を、定年退職日の翌日から起算して１年を超えない範囲<span class=\"ins\"> </span>内<del> </del>で期限を定め、その職員を引き続いて勤務させることができる制度である。</div><div class=\"correctline\"><strong>正しい文：</strong> 勤務延長制度とは定年に達した職員を、定年退職日の翌日から起算して１年を超えない範囲 内で期限を定め、その職員を引き続いて勤務させることができる制度である。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\"><del>勤務延長</del><span class=\"ins\">再雇用</span>制度とは定年退職者等を、従前の勤務実績等に基づく選考により、１年を超えない<span class=\"ins\">範</span> <del>範</del>囲内で任期を定め、職務に就かせる制度である。</div><div class=\"correctline\"><strong>正しい文：</strong> 再雇用制度とは定年退職者等を、従前の勤務実績等に基づく選考により、１年を超えない範 囲内で任期を定め、職務に就かせる制度である。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":6,"body":"第 6 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   諭旨退職は１０日以内の期間を定めて辞職願の提出を勧告し、即時に辞職を求めるものであ\n    り、退職手当の全部又は一部を支給しないことがある。","イ   懲戒処分は、理事長が行う。","ウ   懲戒解雇は予告期間を設けず、即時解雇とする。ただし、この場合、解雇の事由について厚\n    生労働省の認定を受けなければならない。懲戒解雇された者には、退職手当を支給しない。","エ   停職とは停職者の職員としての身分を保有するが、その職務に従事できず、停職期間は１日\n    以上 3 月以下とする。また、停職の期間中は、給与が支給されない。","オ   減給は１回の減給処分の額が平均給与の１日分の半額を超えない額を減給する。 ただし、減\n    給処分に該当する事案が一給与期間に２回以上ある場合で、当該減給の総額が一給与期間に\n    おける給与の総額の１０分の１を超える場合は１０分の１以内の額を減給し、その超える減\n    給の額は翌給与期間以降に減ずる。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","懲戒処分は、理事長が行う。","懲戒処分は、任命権者が行う。"],["ウ","懲戒解雇は予告期間を設けず、即時解雇とする。ただし、この場合、解雇の事由について厚 生労働省の認定を受けなければならない。懲戒解雇された者には、退職手当を支給しない。","懲戒解雇は予告期間を設けず、即時解雇とする。ただし、この場合、解雇の事由について労 働基準監督署長の認定を受けなければならない。懲戒解雇された者には、退職手当を支給し ない。"]],"red":["イ","任命権者","ウ","労","働基準監督署長","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">懲戒処分は、<del>理事長</del><span class=\"ins\">任命権者</span>が行う。</div><div class=\"correctline\"><strong>正しい文：</strong> 懲戒処分は、任命権者が行う。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">懲戒解雇は予告期間を設けず、即時解雇とする。ただし、この場合、解雇の事由について<del>厚</del><span class=\"ins\">労</span> <del>生労</del>働<del>省</del><span class=\"ins\">基準監督署長</span>の認定を受けなければならない。懲戒解雇された者には、退職手当を支給し<span class=\"ins\"> </span>ない。</div><div class=\"correctline\"><strong>正しい文：</strong> 懲戒解雇は予告期間を設けず、即時解雇とする。ただし、この場合、解雇の事由について労 働基準監督署長の認定を受けなければならない。懲戒解雇された者には、退職手当を支給し ない。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":7,"body":"第 7 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   職務として利害関係者を訪問した際に、当該関係者から提供される物品を使用することはで\n    きる。","イ   利害関係者から又は利害関係者の負担により、無償での役務の提供を受けることは禁止され\n    ている。","ウ   利害関係者と共に旅行（職務のための旅行を除く。）をすることは禁止されている。","エ   職務として出席した会議その他の会合において、利害関係者から茶菓の提供を受けることは\n    禁止されている。","オ   利害関係者から 3000 円程度の供応接待を受けることができる。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","職務として出席した会議その他の会合において、利害関係者から茶菓の提供を受けることは 禁止されている。","職務として出席した会議その他の会合において、利害関係者から茶菓の提供を受けることは できる。"],["オ","利害関係者から 3000 円程度の供応接待を受けることができる。","利害関係者から 3000 円程度の供応接待を受けることができない。"]],"red":["エ","受けることは","できる。","オ","供応接待を受けることができない。","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">職務として出席した会議その他の会合において、利害関係者から茶菓の提供を受けることは <del>禁止されてい</del><span class=\"ins\">でき</span>る。</div><div class=\"correctline\"><strong>正しい文：</strong> 職務として出席した会議その他の会合において、利害関係者から茶菓の提供を受けることは できる。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">利害関係者から 3000 円程度の供応接待を受けることができ<del>る</del><span class=\"ins\">ない</span>。</div><div class=\"correctline\"><strong>正しい文：</strong> 利害関係者から 3000 円程度の供応接待を受けることができない。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":8,"body":"第 8 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   独立行政法人国立病院機構ハラスメントの防止等に関する規程は、独立行政法人国立病院機\n    構における人事の公正の確保、職員の利益の保護及び職員の能率を十分発揮できる勤務環境\n    を確保することを目的としている。","イ   不当な仲間はずれやいじめ、飲酒の強要や酔った上での迷惑行為、不正行為の強要、自分の\n    支持する宗教や思想にしつこく関与を求めることなどもハラスメントに該当する。","ウ   パワー・ハラスメントとは、国立病院機構における職務上の地位や人間関係などの個人的な\n    地位の優位性を背景に、嫌がらせなどの言動を繰り返すことを指し、「業務の適正な範囲を超\n    えて」行われた「不適切で不当な」言動であるかどうかが重要となる。","エ   ハラスメントの相談等は、原則として面接によることとし、必要に応じて、電子メール、手\n    紙、電話によるものも受け付けるものとする。","オ   セクシュアル・ハラスメントとは、行為者が意図して、他の者を不快にさせる性的な言動の\n    ことである。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","パワー・ハラスメントとは、国立病院機構における職務上の地位や人間関係などの個人的な 地位の優位性を背景に、嫌がらせなどの言動を繰り返すことを指し、「業務の適正な範囲を超 えて」行われた「不適切で不当な」言動であるかどうかが重要となる。","パワー・ハラスメントとは、国立病院機構における職務上の地位や人間関係などの職場内の 優位性を背景に、嫌がらせなどの言動を繰り返すことを指し、「業務の適正な範囲を超えて」 行われた「不適切で不当な」言動であるかどうかが重要となる。"],["オ","セクシュアル・ハラスメントとは、行為者が意図して、他の者を不快にさせる性的な言動の ことである。","セクシュアル・ハラスメントとは、行為者の意図に関わらず、他の者を不快にさせる性的な 言動のことである。"]],"red":["ウ","職場内の","優位性","オ","行為者の意図に関わらず","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">パワー・ハラスメントとは、国立病院機構における職務上の地位や人間関係などの<del>個人的な</del><span class=\"ins\">職場内の</span> <del>地位の</del>優位性を背景に、嫌がらせなどの言動を繰り返すことを指し、「業務の適正な範囲を超<del> </del>えて」<span class=\"ins\"> </span>行われた「不適切で不当な」言動であるかどうかが重要となる。</div><div class=\"correctline\"><strong>正しい文：</strong> パワー・ハラスメントとは、国立病院機構における職務上の地位や人間関係などの職場内の 優位性を背景に、嫌がらせなどの言動を繰り返すことを指し、「業務の適正な範囲を超えて」 行われた「不適切で不当な」言動であるかどうかが重要となる。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">セクシュアル・ハラスメントとは、行為者<del>が</del><span class=\"ins\">の</span>意図<del>して</del><span class=\"ins\">に関わらず</span>、他の者を不快にさせる性的な<span class=\"ins\"> </span>言動の<del> </del>ことである。</div><div class=\"correctline\"><strong>正しい文：</strong> セクシュアル・ハラスメントとは、行為者の意図に関わらず、他の者を不快にさせる性的な 言動のことである。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":9,"body":"第 9 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   業績評価制度は、職員の業務遂行意欲の向上、業務の改善を図り、国立病院機構全体の発展\n    を目指すことを目的としている。","イ   評価結果は、賞与（業績手当）及び昇給に反映し、職員各人の業務の改善を図り、病院全体\n    の運営改善に結びつける。","ウ   職員各人の仕事の取組み状況を公正・客観的に評価するため、評価期間の開始前に評価項目\n    及び評価の着眼点の明示を行う。","エ   評価結果については、前期又は後期の評価終了後の賞与（６月又は１２月）支給時に、賞与\n    明細書に印字することにより被評価者へ伝達する。","オ   職員各人の業績評価方法は、遂行した業務内容についての評価 （絶対評価）ではなく、他人\n    との比較（相対評価）で行う。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","評価結果については、前期又は後期の評価終了後の賞与（６月又は１２月）支給時に、賞与 明細書に印字することにより被評価者へ伝達する。","評価結果については、前期又は後期の評価終了後の賞与（６月又は１２月）支給時に、給与 支給明細書に印字することにより被評価者へ伝達する。"],["オ","職員各人の業績評価方法は、遂行した業務内容についての評価 （絶対評価）ではなく、他人 との比較（相対評価）で行う。","職員各人の業績評価方法は、他人との比較（相対評価）ではなく、遂行した業務内容につい ての評価 （絶対評価）で行う。"]],"red":["エ","給与","支給明細書","オ","他人との比較（相対評価）ではなく、遂行した業務内容につい","ての評価 （絶対評価）で行う。","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">評価結果については、前期又は後期の評価終了後の賞与（６月又は１２月）支給時に、<del>賞</del><span class=\"ins\">給</span>与 <span class=\"ins\">支給</span>明細書に印字することにより被評価者へ伝達する。</div><div class=\"correctline\"><strong>正しい文：</strong> 評価結果については、前期又は後期の評価終了後の賞与（６月又は１２月）支給時に、給与 支給明細書に印字することにより被評価者へ伝達する。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">職員各人の業績評価方法は、<span class=\"ins\">他人との比較（相対評価）ではなく、</span>遂行した業務内容につい<span class=\"ins\"> </span>ての評価 （絶対評価）で<del>はなく、他人 との比較（相対評価）で</del>行う。</div><div class=\"correctline\"><strong>正しい文：</strong> 職員各人の業績評価方法は、他人との比較（相対評価）ではなく、遂行した業務内容につい ての評価 （絶対評価）で行う。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":10,"body":"第 10 問 業績評価ついて誤っている文章を2つ選びなさい。","options":["ア   各評価の配点はそれぞれ５０点満点とし、合算した点数を「ＡＡ」～「Ｄ」（最高「１００\n    点」、 最低「２０点」、標準「６０点」）の５段階により区分する。","イ   補助者を設置する場合は、評価期間が開始される前（９月中又は３月中）に行い、原則、評\n    価期間中 に追加や変更を行うことはできない。","ウ   評価の種類は、「業務遂行能力評価」及び「業務実績評価」（設定目標に対する評価）とす\n    る。","エ   業務実績評価は、職員各人に必要な業務に対する姿勢及び能力を評価する。","オ   業務遂行能力評価は、評価者から説明される当年度の病院及び部門（組織）の目標を勘案し\n    ながら具体的な業務上の目標設定を行い、その目標の到達度を評価する。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","業務実績評価は、職員各人に必要な業務に対する姿勢及び能力を評価する。","業務遂行能力評価は、職員各人に必要な業務に対する姿勢及び能力を評価する。"],["オ","業務遂行能力評価は、評価者から説明される当年度の病院及び部門（組織）の目標を勘案し ながら具体的な業務上の目標設定を行い、その目標の到達度を評価する。","務実績評価は、評価者から説明される当年度の病院及び部門（組織）の目標を勘案しながら 具体的な業務上の目標設定を行い、その目標の到達度を評価する。"]],"red":["エ","業務遂行能力評価は、","オ","務実績評価は、","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">業務<del>実績</del><span class=\"ins\">遂行能力</span>評価は、職員各人に必要な業務に対する姿勢及び能力を評価する。</div><div class=\"correctline\"><strong>正しい文：</strong> 業務遂行能力評価は、職員各人に必要な業務に対する姿勢及び能力を評価する。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\"><del>業</del>務<del>遂行能力</del><span class=\"ins\">実績</span>評価は、評価者から説明される当年度の病院及び部門（組織）の目標を勘案し<del> </del>ながら<span class=\"ins\"> </span>具体的な業務上の目標設定を行い、その目標の到達度を評価する。</div><div class=\"correctline\"><strong>正しい文：</strong> 務実績評価は、評価者から説明される当年度の病院及び部門（組織）の目標を勘案しながら 具体的な業務上の目標設定を行い、その目標の到達度を評価する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":11,"body":"第 11 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   休職等により勤務した期間が当該評価期間の 1／６に相当する期間の日数に満たない場合\n    は、評価の対象外とし標準（６０点）の評価結果とみなす。ただし、医師については、「試用\n    期間」がある場合でも評価対象とする。","イ   評価者は、とりわけ勤務成績が良好でないと認められる事実が見られる場合は、評価者は評\n    価期間中において繰返しの指導（概ね 5 回）を行い、被評価者に自覚を促すことが必要であ\n    る。","ウ   期間の定めのある契約は、両当事者（労働者と使用者）をその期間中拘束する性格のもので\n    あるため、特別な事情がない限り、契約当事者双方は一方的な理由だけでの解約はできな\n    い。","エ   労働基準法では、賃金とは名称を問わず労働の対価として使用者が支払う全てのものをい\n    い、使用者は、賃金を①通貨で、②全額を、③毎月 1 回以上、④一定の期日に、⑤直接労働\n    者に支払わなければならない。","オ   期間の定めのある契約は原則として 3 年を超えてはならない。"],"correct":1,"correct_text":"１ ア、イ","changed":[["ア","休職等により勤務した期間が当該評価期間の 1／６に相当する期間の日数に満たない場合 は、評価の対象外とし標準（６０点）の評価結果とみなす。ただし、医師については、「試用 期間」がある場合でも評価対象とする。","休職等により勤務した期間が当該評価期間の 5／６に相当する期間の日数に満たない場合 は、評価の対象外とし標準（６０点）の評価結果とみなす。ただし、医師については、「試用 期間」がある場合でも評価対象とする。"],["イ","評価者は、とりわけ勤務成績が良好でないと認められる事実が見られる場合は、評価者は評 価期間中において繰返しの指導（概ね 5 回）を行い、被評価者に自覚を促すことが必要であ る。","評価者は、とりわけ勤務成績が良好でないと認められる事実が見られる場合は、評価者は評 価期間中において繰返しの指導（概ね 3 回）を行い、被評価者に自覚を促すことが必要であ る。"]],"red":["ア","5／６","イ","3 回","１ ア、イ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ア、イ</div><div class=\"diffblock\"><div class=\"difflabel\">ア</div><div class=\"diffline\">休職等により勤務した期間が当該評価期間の <del>1</del><span class=\"ins\">5</span>／６に相当する期間の日数に満たない場合 は、評価の対象外とし標準（６０点）の評価結果とみなす。ただし、医師については、「試用 期間」がある場合でも評価対象とする。</div><div class=\"correctline\"><strong>正しい文：</strong> 休職等により勤務した期間が当該評価期間の 5／６に相当する期間の日数に満たない場合 は、評価の対象外とし標準（６０点）の評価結果とみなす。ただし、医師については、「試用 期間」がある場合でも評価対象とする。</div></div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">評価者は、とりわけ勤務成績が良好でないと認められる事実が見られる場合は、評価者は評 価期間中において繰返しの指導（概ね <del>5</del><span class=\"ins\">3</span> 回）を行い、被評価者に自覚を促すことが必要であ る。</div><div class=\"correctline\"><strong>正しい文：</strong> 評価者は、とりわけ勤務成績が良好でないと認められる事実が見られる場合は、評価者は評 価期間中において繰返しの指導（概ね 3 回）を行い、被評価者に自覚を促すことが必要であ る。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ア","イ"],"required":2},{"id":12,"body":"第 12 問 労働条件の明示ついて必ず明示しなければならない事項として誤っている項目の組み合\n       わせを選びなさい。","options":["ア   労働契約の期間","イ   期間の定めのある労働契約を更新する場合の基準","ウ   休職に関する事項","エ   始業・終業の時刻、所定労働時間を超える労働（早出・残業等）の有無、休憩時間、休日、\n    休暇、２交替制等に関する事項","オ   退職手当の定めが適用される労働者の範囲、退職手当の決定、計算・支払いの方法及び支払\n    い時期"],"correct":4,"correct_text":"4 ウ、オ","changed":[],"red":["ウ","オ","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":13,"body":"第 13 問    労働条件の明示ついて定めをした場合に明示しなければならない事項として誤っている\n         項目を2つ選びなさい。","options":["ア 労働者に負担させる食費、作業用品などに関する事項","イ 臨時に支払われる賃金、賞与等及び最低賃金額に関する事項","ウ 退職に関する事項（解雇の事由を含む。）","エ 災害補償、業務外の傷病扶助に関する事項","オ 期間の定めのある労働契約を更新する場合の基準"],"correct":4,"correct_text":"4 ウ、オ","changed":[],"red":["ウ","オ","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":14,"body":"第 14 問 次の中から誤っている文章を2つ選びなさい。","options":["ア １か月以内の一定の期間を平均した労働時間数の一週間分が、４０時間（特例措置事業場は４\n  ４時間）以下の範囲内であれば、特定の日や週について１日及び１週間の法定労働時間を超え\n  て働かせることができる。","イ 労働基準法第３２条において、使用者は労働者に休憩時間を除いて１日に 8 時間、１週間に\n  44 時間を超えて労働させてはならない。","ウ 国立病院機構の休憩時間は労働時間が６時間を超える場合は少なくとも 45 分、８時間を超え\n  る場合は少なくとも１時間の休憩を与えなければならない。","エ 休憩時間は、①労働時間の途中で②一斉に与え、かつ③自由に利用させることが原則である。","オ 法定労働時間を超えて時間外労働（残業）や法定休日に労働させる場合は、労使協定（「３６\n  （さぶろく）協定」）を締結し、所轄の労働基準監督署長に 届け出る必要がある。また、３６\n  協定の延長時間（時間外労働に相当する時間）は ①１日、 ②１ヶ月、③１年間 の３つにつ\n  いて協定しなければならない。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","労働基準法第３２条において、使用者は労働者に休憩時間を除いて１日に 8 時間、１週間に 44 時間を超えて労働させてはならない。","労働基準法第３２条において、使用者は労働者に休憩時間を除いて１日に 8 時間、１週間に 40 時間を超えて労働させてはならない。"],["ウ","国立病院機構の休憩時間は労働時間が６時間を超える場合は少なくとも 45 分、８時間を超え る場合は少なくとも１時間の休憩を与えなければならない。","使用者（労働基準法）の休憩時間は労働時間が６時間を超える場合は少なくとも 45 分、８時 間を超える場合は少なくとも１時間の休憩を与えなければならない。"]],"red":["イ","40 時間","ウ","使用者（労働基準法）","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">労働基準法第３２条において、使用者は労働者に休憩時間を除いて１日に 8 時間、１週間に 4<del>4</del><span class=\"ins\">0</span> 時間を超えて労働させてはならない。</div><div class=\"correctline\"><strong>正しい文：</strong> 労働基準法第３２条において、使用者は労働者に休憩時間を除いて１日に 8 時間、１週間に 40 時間を超えて労働させてはならない。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\"><del>国立病院機構</del><span class=\"ins\">使用者（労働基準法）</span>の休憩時間は労働時間が６時間を超える場合は少なくとも 45 分、８時<span class=\"ins\"> </span>間を超え<del> </del>る場合は少なくとも１時間の休憩を与えなければならない。</div><div class=\"correctline\"><strong>正しい文：</strong> 使用者（労働基準法）の休憩時間は労働時間が６時間を超える場合は少なくとも 45 分、８時 間を超える場合は少なくとも１時間の休憩を与えなければならない。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":15,"body":"第 15 問 次の中から誤っている文章を2つ選びなさい。","options":["ア ６時間単位で取得した年次休暇を日に換算する場合は、8 時間をもって 1 日とする。","イ 年次休暇（この項の規定により繰り越されたものを除く）は、2０日を限度として、その年度\n  の翌年に繰り越すことができる。","ウ 年次有給休暇は前日までに指定すれば、無条件で与えられるものであり、ただし、年次有給休\n  暇の取得を認めることにより事業の正常な運営を妨げることになる場合は、別の日に取得す\n  るように求めることができる。","エ 監視又は断続的労働に従事する者と宿日直勤務者については、理事長の許可を条件に労働時間\n  等の規制を全部又は一部除外している。","オ 常時１０人以上の労働者を使用している事業場では就業規則を作成しなければならない。ま\n  た、「常時１０人以上の労働者」には、パートタイム労働者等は含まれない。"],"correct":5,"correct_text":"5 エ、オ","changed":[["ア","６時間単位で取得した年次休暇を日に換算する場合は、8 時間をもって 1 日とする。","６か月間継続勤務して全労働日の８割以上出勤した場合は、週 5 日働いている場合は１０日 間の有給休暇を与えなければならない。"],["イ","年次休暇（この項の規定により繰り越されたものを除く）は、2０日を限度として、その年度 の翌年に繰り越すことができる。","年次有給休暇は付与された日から 2 年で時効となる。付与された日から 1 年間で使い切れな かった年次有給休暇は翌年に繰り越し、新たに与えられた休暇日数に加算されるが、さらに 1 年間使わなかったときは時効により消滅する。"],["エ","監視又は断続的労働に従事する者と宿日直勤務者については、理事長の許可を条件に労働時間 等の規制を全部又は一部除外している。","監視又は断続的労働に従事する者と宿日直勤務者については、所轄労働基準監督署長の許可を 条件に労働時間等の規制を全部又は一部除外している。"],["オ","常時１０人以上の労働者を使用している事業場では就業規則を作成しなければならない。ま た、「常時１０人以上の労働者」には、パートタイム労働者等は含まれない。","常時１０人以上の労働者を使用している事業場では就業規則を作成しなければならない。ま た、「常時１０人以上の労働者」には、パートタイム労働者等も含まれる。"]],"red":["エ","所轄労働基準監督署長","オ","パートタイム労働者等も含まれる。","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">監視又は断続的労働に従事する者と宿日直勤務者については、<del>理事</del><span class=\"ins\">所轄労働基準監督署</span>長の許可を<span class=\"ins\"> </span>条件に労働時間<del> </del>等の規制を全部又は一部除外している。</div><div class=\"correctline\"><strong>正しい文：</strong> 監視又は断続的労働に従事する者と宿日直勤務者については、所轄労働基準監督署長の許可を 条件に労働時間等の規制を全部又は一部除外している。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">常時１０人以上の労働者を使用している事業場では就業規則を作成しなければならない。ま た、「常時１０人以上の労働者」には、パートタイム労働者等<del>は</del><span class=\"ins\">も</span>含まれ<del>ない</del><span class=\"ins\">る</span>。</div><div class=\"correctline\"><strong>正しい文：</strong> 常時１０人以上の労働者を使用している事業場では就業規則を作成しなければならない。ま た、「常時１０人以上の労働者」には、パートタイム労働者等も含まれる。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":16,"body":"第 16 問 次の中から誤っている文章をすべて選びなさい。","options":["ア 前年度に国等に勤務していた者が引き続き採用された職員に付与される年次休暇は、1 年度に\n  つき 20 日である。","イ 理事長は、労基法第３９条第４項の規定による協定を締結したときは、その協定の定めるとこ\n  ろにより、１の年度について５日を限度として１時間を単位とすることができる。","ウ 時間単位で取得した年次休暇を日に換算する場合は、8 時間をもって 1 日とする。","エ 年次休暇の基準日は、常勤職員・非常勤職員・期間職員ともに、当該年度に年次休暇を付与し\n  た日（4 月 1 日又は採用日）である。","オ 年次休暇の付与単位は 1 日又は半日である。"],"correct":1,"correct_text":"１ ア、イ","changed":[["ア","前年度に国等に勤務していた者が引き続き採用された職員に付与される年次休暇は、1 年度に つき 20 日である。","前年度に国等に勤務していた者以外が引き続き採用された職員に付与される年次休暇は、1 年 度につき 20 日である。"],["イ","理事長は、労基法第３９条第４項の規定による協定を締結したときは、その協定の定めるとこ ろにより、１の年度について５日を限度として１時間を単位とすることができる。","所属長は、労基法第３９条第４項の規定による協定を締結したときは、その協定の定めるとこ ろにより、１の年度について５日を限度として１時間を単位とすることができる。"]],"red":["ア","以外","イ","所属長","１ ア、イ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ア、イ</div><div class=\"diffblock\"><div class=\"difflabel\">ア</div><div class=\"diffline\">前年度に国等に勤務していた者<span class=\"ins\">以外</span>が引き続き採用された職員に付与される年次休暇は、1 年<span class=\"ins\"> </span>度に<del> </del>つき 20 日である。</div><div class=\"correctline\"><strong>正しい文：</strong> 前年度に国等に勤務していた者以外が引き続き採用された職員に付与される年次休暇は、1 年 度につき 20 日である。</div></div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\"><del>理事</del><span class=\"ins\">所属</span>長は、労基法第３９条第４項の規定による協定を締結したときは、その協定の定めるとこ ろにより、１の年度について５日を限度として１時間を単位とすることができる。</div><div class=\"correctline\"><strong>正しい文：</strong> 所属長は、労基法第３９条第４項の規定による協定を締結したときは、その協定の定めるとこ ろにより、１の年度について５日を限度として１時間を単位とすることができる。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ア","イ"],"required":2},{"id":17,"body":"第 17 問 就業規則で必ず記載しなければならない事項（絶対的必要記載事項）について誤ってい\n      る項目を2つ選びなさい。","options":["ア 賃金（臨時の賃金等を除く。）の決定、計算及び支払の方法、締切り及び支払 時期、昇給に関\n  する事項","イ 退職手当の定めをする場合には、適用される労働者の範囲、退職手当の決定、 計算及び支払\n  の方法、退職手当の支払の時期に関する事項","ウ 臨時の賃金等（退職手当を除きます。）及び最低賃金額の定めをする場合には、これに関する\n  事項","エ 始業及び終業の時刻、休憩時間、休日、休暇、労働者を２組以上に分けて交替 で就業させる\n  場合においては就業時転換に関する事項","オ 退職（解雇の事由を含む。）に関する事項"],"correct":2,"correct_text":"２ イ、ウ","changed":[],"red":["イ","ウ","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":18,"body":"第 18 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 総括安全衛生管理者、安全管理者、衛生管理者及び産業医の選任は、その選任すべき事由が発\n  生した日から１0 日以内に選任し、遅滞なく所轄の労働基準監督署へ報告する必要がある。","イ 安衛法では、労働災害を防止するための管理を必要とする一定の作業について、各事業場の作\n  業内容、規模等に応じて、安全衛生推進者の選任を義務づけている。","ウ 安衛法では、事業場を一つの適用単位として、各事業場の業種、規模等に応じて、安全委員\n  会、衛生委員会の設置を義務づけている。","エ 総括安全衛生管理者とは、安全管理者、衛生管理者を指揮させるとともに、労働者の危険また\n  は健康障害を防止するための措置等の 業務を統括管理させることとされており、常時１,００\n  ０人以上の労働者を使用するすべての事業場で選任することとされている。","オ 安全管理者、衛生管理者の選任を要しない労働者数１０人から４９人の事業場には、安全衛生\n  推進者などの選任を義務づけている。"],"correct":1,"correct_text":"１ ア、イ","changed":[["ア","総括安全衛生管理者、安全管理者、衛生管理者及び産業医の選任は、その選任すべき事由が発 生した日から１0 日以内に選任し、遅滞なく所轄の労働基準監督署へ報告する必要がある。","総括安全衛生管理者、安全管理者、衛生管理者及び産業医の選任は、その選任すべき事由が発 生した日から１４日以内に選任し、遅滞なく所轄の労働基準監督署へ報告する必要がある。"],["イ","安衛法では、労働災害を防止するための管理を必要とする一定の作業について、各事業場の作 業内容、規模等に応じて、安全衛生推進者の選任を義務づけている。","安衛法では、労働災害を防止するための管理を必要とする一定の作業について、各事業場の作 業内容、規模等に応じて、作業主任者の選任を義務づけている。"]],"red":["ア","１４日以内","イ","作業主任者","１ ア、イ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ア、イ</div><div class=\"diffblock\"><div class=\"difflabel\">ア</div><div class=\"diffline\">総括安全衛生管理者、安全管理者、衛生管理者及び産業医の選任は、その選任すべき事由が発 生した日から１<del>0 </del><span class=\"ins\">４</span>日以内に選任し、遅滞なく所轄の労働基準監督署へ報告する必要がある。</div><div class=\"correctline\"><strong>正しい文：</strong> 総括安全衛生管理者、安全管理者、衛生管理者及び産業医の選任は、その選任すべき事由が発 生した日から１４日以内に選任し、遅滞なく所轄の労働基準監督署へ報告する必要がある。</div></div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">安衛法では、労働災害を防止するための管理を必要とする一定の作業について、各事業場の作 業内容、規模等に応じて、<del>安全衛生推進</del><span class=\"ins\">作業主任</span>者の選任を義務づけている。</div><div class=\"correctline\"><strong>正しい文：</strong> 安衛法では、労働災害を防止するための管理を必要とする一定の作業について、各事業場の作 業内容、規模等に応じて、作業主任者の選任を義務づけている。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ア","イ"],"required":2},{"id":19,"body":"第 19 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 総括安全衛生管理者の職務には、健康診断の実施その他健康の保持増進のための措置に関する\n  こと、並びに労働災害の原因の調査及び再発防止対策に関することが含まれる。","イ 安全管理者とは、安全衛生業務のうち、安全に係る技術的事項を管理させることとされてお\n  り、常時５０人以上の労働者を使用するすべての事業場で選任することとされている。","ウ 衛生管理者とは、安全衛生業務のうち、衛生に係る技術的事項を管理させることとされてお\n  り、安衛法上、機構病院においては、選任義務はない。","エ 産業医とは、専門家として労働者の健康管理等に当たらせることとされており、常時５０人以\n  上の労働者を使用するすべての事業場で選任することとされている。ただし、常時３，００\n  ０人を超える労働者を使用する事業場では、２人以上の産業医を選任することとされてい\n  る。","オ 作業主任者とは、労働災害を防止するための管理を必要とする一定の作業について、作業に従\n  事する労働者を指揮させるとともに、労働者の危険または健康障害を防止するための措置等\n  の業務を行わせることとなっている。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","安全管理者とは、安全衛生業務のうち、安全に係る技術的事項を管理させることとされてお り、常時５０人以上の労働者を使用するすべての事業場で選任することとされている。","衛生管理者とは、安全衛生業務のうち、安全に係る技術的事項を管理させることとされてお り、常時５０人以上の労働者を使用するすべての事業場で選任することとされている。"],["ウ","衛生管理者とは、安全衛生業務のうち、衛生に係る技術的事項を管理させることとされてお り、安衛法上、機構病院においては、選任義務はない。","安全管理者とは、安全衛生業務のうち、衛生に係る技術的事項を管理させることとされてお り、安衛法上、機構病院においては、選任義務はない。"]],"red":["イ","衛生管理者とは、","ウ","安全管理者とは、","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\"><del>安全</del><span class=\"ins\">衛生</span>管理者とは、安全衛生業務のうち、安全に係る技術的事項を管理させることとされてお り、常時５０人以上の労働者を使用するすべての事業場で選任することとされている。</div><div class=\"correctline\"><strong>正しい文：</strong> 衛生管理者とは、安全衛生業務のうち、安全に係る技術的事項を管理させることとされてお り、常時５０人以上の労働者を使用するすべての事業場で選任することとされている。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\"><del>衛生</del><span class=\"ins\">安全</span>管理者とは、安全衛生業務のうち、衛生に係る技術的事項を管理させることとされてお り、安衛法上、機構病院においては、選任義務はない。</div><div class=\"correctline\"><strong>正しい文：</strong> 安全管理者とは、安全衛生業務のうち、衛生に係る技術的事項を管理させることとされてお り、安衛法上、機構病院においては、選任義務はない。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":20,"body":"第 20 問 次の中から誤っている文章を2つ選びなさい。","options":["ア バランスト・スコアカード(BSC:Balanced Score Card)を活用することで、クロス SWOT 分析\n  によって導出された戦略目標を実行可能なアクションプランに落とし込むことが可能となる。","イ BSC とは、戦略目標を「顧客」、「内部プロセス」、「学習と成長」の 3 つの視点に分類し、そ\n  れぞれについて評価指標を決定するものである。","ウ BSC を作成する際はそれぞれの戦略目標について「重要成功因子」とそれに対する「成果指\n  標」を設定し、成果指標達成のためのアクションプランを検討する。","エ 成果指標や戦略目標の達成が懸念される場合は、アクションプランの見直しや戦略そのものの\n  見直しも行う。","オ BSC を作成する際には、戦略策定者がアクションプラン実行者となる場合が多いため、戦略\n  策定者が BSC について理解する必要がある。"],"correct":3,"correct_text":"3 イ、オ","changed":[["イ","BSC とは、戦略目標を「顧客」、「内部プロセス」、「学習と成長」の 3 つの視点に分類し、そ れぞれについて評価指標を決定するものである。","BSC とは、戦略目標を「財務」、「顧客」、 「内部プロセス」、「学習と成長」の 4 つの視点に分 類し、それぞれについて評価指標を決定するものである。"],["オ","BSC を作成する際には、戦略策定者がアクションプラン実行者となる場合が多いため、戦略 策定者が BSC について理解する必要がある。","BSC を作成する際には、戦略策定者がアクションプラン実行者となる場合が多いため、アク ションプラン実行者への丁寧な説明が必要である。"]],"red":["イ","「財務」","4 つ","オ","アク","ションプラン実行者への丁寧な説明が必要である。","3 イ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">BSC とは、戦略目標を「<span class=\"ins\">財務」、「</span>顧客」、<span class=\"ins\"> </span>「内部プロセス」、「学習と成長」の <del>3</del><span class=\"ins\">4</span> つの視点に分<span class=\"ins\"> </span>類し、そ<del> </del>れぞれについて評価指標を決定するものである。</div><div class=\"correctline\"><strong>正しい文：</strong> BSC とは、戦略目標を「財務」、「顧客」、 「内部プロセス」、「学習と成長」の 4 つの視点に分 類し、それぞれについて評価指標を決定するものである。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">BSC を作成する際には、戦略策定者がアクションプラン実行者となる場合が多いため、<del>戦略</del><span class=\"ins\">アク</span> <del>策定</del><span class=\"ins\">ションプラン実行</span>者<span class=\"ins\">への丁寧な説明</span>が<del> BSC について理解する</del>必要<del>が</del><span class=\"ins\">で</span>ある。</div><div class=\"correctline\"><strong>正しい文：</strong> BSC を作成する際には、戦略策定者がアクションプラン実行者となる場合が多いため、アク ションプラン実行者への丁寧な説明が必要である。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","オ"],"required":2},{"id":21,"body":"第 21 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 医業収支率は（医業収益÷医業費用）×１００で算出され、この比率が高いほど経営効率に優\n  れ、経営状態が良いことを示している。","イ 経常収支率は（経常収益÷経常費用）×１００で算出され、この比率が高いほど経営効率に優\n  れ、経営状態が良いことを示している。","ウ 人件費率は（給与費÷医業収益）×１００で算出され、職種別人員、賃金ベース、平均年齢等\n  からその適否を判断する。","エ 委託費率は（委託費÷経常収益）×１００で算出される。","オ 入院患者 1 人当たり医療費用は医業費用÷1 日平均在院患者数で算出され、この指標が小さい\n  ほど費用を抑制して病院運営をしていることを表している。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","委託費率は（委託費÷経常収益）×１００で算出される。","委託費率は（委託費÷医業収益）×１００で算出される。"],["オ","入院患者 1 人当たり医療費用は医業費用÷1 日平均在院患者数で算出され、この指標が小さい ほど費用を抑制して病院運営をしていることを表している。","入院患者 1 人当たり医療費用は医業費用÷延在院患者数で算出され、この指標が小さいほど費 用を抑制して病院運営をしていることを表している。"]],"red":["エ","医業収益","オ","延在院患者数","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">委託費率は（委託費÷<del>経常</del><span class=\"ins\">医業</span>収益）×１００で算出される。</div><div class=\"correctline\"><strong>正しい文：</strong> 委託費率は（委託費÷医業収益）×１００で算出される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">入院患者 1 人当たり医療費用は医業費用÷<del>1 日平均</del><span class=\"ins\">延</span>在院患者数で算出され、この指標が小さい<del> </del>ほど費<span class=\"ins\"> </span>用を抑制して病院運営をしていることを表している。</div><div class=\"correctline\"><strong>正しい文：</strong> 入院患者 1 人当たり医療費用は医業費用÷延在院患者数で算出され、この指標が小さいほど費 用を抑制して病院運営をしていることを表している。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":22,"body":"第 22 問 次の文章の中から誤っている文章を2つ選びなさい。","options":["ア 職員 1 人当たり医業収益は（医業収益÷年間平均職員数）で算出され、労働効率の良否を測る\n  尺度として用いられる。","イ 職員一人当たり入院患者数は（1 日平均在院患者数÷年間平均職員数）で算出され、職員の労\n  働効率を示している。","ウ 売上債権回転日数は医業未収金÷(医業収益÷総資産)で算出される。","エ 医業収益成長率は（（当期医業収益−前期医業収益）÷前期医業収益）×100 で算出される。","オ 債務償還年数は（借入金＋リース責務）÷（医業収益÷暦日数）で算出され、この比率が\n  100％を越している場合は、債務超過に陥っていることを示している。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","売上債権回転日数は医業未収金÷(医業収益÷総資産)で算出される。","売上債権回転日数は医業未収金÷(医業収益÷暦日数)で算出される。"],["オ","債務償還年数は（借入金＋リース責務）÷（医業収益÷暦日数）で算出され、この比率が 100％を越している場合は、債務超過に陥っていることを示している。","債務償還年数は（借入金＋リース責務）÷（経常利益＋減価償却費）で算出され、この比率が 100％を越している場合は、債務超過に陥っていることを示している。"]],"red":["暦日数","経常利益＋減価償却費","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">売上債権回転日数は医業未収金÷(医業収益÷<del>総資産</del><span class=\"ins\">暦日数</span>)で算出される。</div><div class=\"correctline\"><strong>正しい文：</strong> 売上債権回転日数は医業未収金÷(医業収益÷暦日数)で算出される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">債務償還年数は（借入金＋リース責務）÷（<del>医業収</del><span class=\"ins\">経常利</span>益<del>÷暦日数</del><span class=\"ins\">＋減価償却費</span>）で算出され、この比率が 100％を越している場合は、債務超過に陥っていることを示している。</div><div class=\"correctline\"><strong>正しい文：</strong> 債務償還年数は（借入金＋リース責務）÷（経常利益＋減価償却費）で算出され、この比率が 100％を越している場合は、債務超過に陥っていることを示している。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":23,"body":"第 23 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   独立行政法人における内部統制とは、法令等を遵守しつつ業務を行い、目的を有効かつ効果\n    的に果たすための体制や仕組みのことを指す。","イ    リスク管理を活用した内部統制の取組みでは、リスクの顕在化防止または顕在化後の損失最\n    小化を図ることを推進している。","ウ    業務監査指導には業務の実施状況や経営管理、医療管理、防災及び安全に関する事項が対象\n    となる。","エ   内部統制の推進体制として、各法人では、内部統制を担当する役員、内部統制推進責任者及\n    び内部統制推進部門を設置することとしており、国立病院機構においては、本部、グループ\n    担当理事部門及び各病院に内部統制委員会を設置し、 内部統制システムを整備している。","オ   コンプライアンスの推進に当たって、日々の業務活動から職員一人ひとりが着実に取組を実\n    践していくため、職員一人ひとりの活動を基本とし、各職場単位で自主点検を通じ、職場内\n    の法令遵守の実施状況の把握等を行う体制を構築する必要がある。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","内部統制の推進体制として、各法人では、内部統制を担当する役員、内部統制推進責任者及 び内部統制推進部門を設置することとしており、国立病院機構においては、本部、グループ 担当理事部門及び各病院に内部統制委員会を設置し、 内部統制システムを整備している。","内部統制の推進体制として、各法人では、内部統制を担当する役員、内部統制推進責任者及 び内部統制推進部門を設置することとしており、国立病院機構においては、本部、グループ担 当理事部門及び各病院に内部統制推進責任者を設置し、 内部統制システムを整備している。"],["オ","コンプライアンスの推進に当たって、日々の業務活動から職員一人ひとりが着実に取組を実 践していくため、職員一人ひとりの活動を基本とし、各職場単位で自主点検を通じ、職場内 の法令遵守の実施状況の把握等を行う体制を構築する必要がある。","コンプライアンスの推進に当たって、日々の業務活動から職員一人ひとりが着実に取組を実 践していくため、職場単位の活動を基本とし、各職場単位で自主点検を通じ、職場内の法令 遵守の実施状況の把握等を行う体制を構築する必要がある。"]],"red":["エ","内部統制推進責任者","オ","職場単位","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">内部統制の推進体制として、各法人では、内部統制を担当する役員、内部統制推進責任者及 び内部統制推進部門を設置することとしており、国立病院機構においては、本部、グループ<span class=\"ins\">担</span> <del>担</del>当理事部門及び各病院に内部統制<del>委員会</del><span class=\"ins\">推進責任者</span>を設置し、 内部統制システムを整備している。</div><div class=\"correctline\"><strong>正しい文：</strong> 内部統制の推進体制として、各法人では、内部統制を担当する役員、内部統制推進責任者及 び内部統制推進部門を設置することとしており、国立病院機構においては、本部、グループ担 当理事部門及び各病院に内部統制推進責任者を設置し、 内部統制システムを整備している。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">コンプライアンスの推進に当たって、日々の業務活動から職員一人ひとりが着実に取組を実 践していくため、職<del>員一人ひとり</del><span class=\"ins\">場単位</span>の活動を基本とし、各職場単位で自主点検を通じ、職場内<del> </del>の法令<span class=\"ins\"> </span>遵守の実施状況の把握等を行う体制を構築する必要がある。</div><div class=\"correctline\"><strong>正しい文：</strong> コンプライアンスの推進に当たって、日々の業務活動から職員一人ひとりが着実に取組を実 践していくため、職場単位の活動を基本とし、各職場単位で自主点検を通じ、職場内の法令 遵守の実施状況の把握等を行う体制を構築する必要がある。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":24,"body":"第 24 問 次の中から正しい文章を2つ選びなさい。","options":["ア   診療所とは、患者を入院させるための施設を有しないものかつ１９人以下の患者を入院させ\n    るための施設である。","イ   病院とは、 20 人以上の患者を入院させるための施設を有し、傷病者が、科学的でかつ正な\n    診療を受けることができる便宜を与えることを主たる目的として組織され、かつ、運営され\n    る施設である。","ウ   介護老人保健施設とは、介護保険法の規定による介護老人保健施設であり、要介護者に対\n    し、施設サービス計画に基づいて、看護、医学的管理の下における介護及び機能訓練その他\n    必要な医療を行うとともに、その日常生活上の世話を行うことを目的とする施設である。","エ   助産所は、妊婦、産婦又はじょく婦１9 人以上の入所施設を有してはならない。","オ   病院、診療所、助産所は医師又は歯科医師が、公衆又は特定多数人のため医業又は歯科医業\n    を行う場所である。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["ア","診療所とは、患者を入院させるための施設を有しないものかつ１９人以下の患者を入院させ るための施設である。","診療所とは、患者を入院させるための施設を有しないもの又は１９人以下の患者を入院させ るための施設である。"],["エ","助産所は、妊婦、産婦又はじょく婦１9 人以上の入所施設を有してはならない。","助産所は、妊婦、産婦又はじょく婦１0 人以上の入所施設を有してはならない。"],["オ","病院、診療所、助産所は医師又は歯科医師が、公衆又は特定多数人のため医業又は歯科医業 を行う場所である。","病院、診療所はは医師又は歯科医師が、公衆又は特定多数人のため医業又は歯科医業を行う 場所である。"]],"red":["又は","イ","ウ","１0 人以上","病院、診療所は","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>正しい項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"correctline\">病院とは、 20 人以上の患者を入院させるための施設を有し、傷病者が、科学的でかつ正な 診療を受けることができる便宜を与えることを主たる目的として組織され、かつ、運営され る施設である。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"correctline\">介護老人保健施設とは、介護保険法の規定による介護老人保健施設であり、要介護者に対 し、施設サービス計画に基づいて、看護、医学的管理の下における介護及び機能訓練その他 必要な医療を行うとともに、その日常生活上の世話を行うことを目的とする施設である。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":25,"body":"第 25 問 次の中から誤っている文章を2つ選びなさい。","options":["ア    医療計画は基本方針に即して、かつ、地域の実情に応じて、当該都道府県における医療提供\n    体制の確保を図るための計画を定めるものとされている。","イ    都道府県は、5 年ごとに医療計画ついて調査、分析及び評価を行い、必要があると認めると\n    きは医療計画を変更する。","ウ    開設承認事項を変更しようとするときはあらかじめ都道府県知事へ許可申請が必要なものと\n    変更後１4 日以内に都道府県知事へ届出が必要なものがある。","エ   病院を開設しようとするときは、都道府県知事の許可を受けなければならない。","オ    医療法人制度は、個人経営でも容易に法人格を取得させ、医業の永続性を確保するととも\n    に、医療の安定的な普及・向上を図るために設けられている。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","都道府県は、5 年ごとに医療計画ついて調査、分析及び評価を行い、必要があると認めると きは医療計画を変更する。","都道府県は、6 年ごとに医療計画ついて調査、分析及び評価を行い、必要があると認めると きは医療計画を変更する。"],["ウ","開設承認事項を変更しようとするときはあらかじめ都道府県知事へ許可申請が必要なものと 変更後１4 日以内に都道府県知事へ届出が必要なものがある。","開設承認事項を変更しようとするときはあらかじめ都道府県知事へ許可申請が必要なものと 変更後 10 日以内都道府県知事へ届出が必要なものがある。"]],"red":["イ","6 年","ウ","10 日以内","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">都道府県は、<del>5</del><span class=\"ins\">6</span> 年ごとに医療計画ついて調査、分析及び評価を行い、必要があると認めると きは医療計画を変更する。</div><div class=\"correctline\"><strong>正しい文：</strong> 都道府県は、6 年ごとに医療計画ついて調査、分析及び評価を行い、必要があると認めると きは医療計画を変更する。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">開設承認事項を変更しようとするときはあらかじめ都道府県知事へ許可申請が必要なものと 変更後<del>１4</del><span class=\"ins\"> 10</span> 日以内<del>に</del>都道府県知事へ届出が必要なものがある。</div><div class=\"correctline\"><strong>正しい文：</strong> 開設承認事項を変更しようとするときはあらかじめ都道府県知事へ許可申請が必要なものと 変更後 10 日以内都道府県知事へ届出が必要なものがある。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":26,"body":"第 26 問 病院の開設承認事項を変更しようとするときにあらかじめ都道府県知事へ許可申請が必\n       要な項目で誤っている組み合わせをを選びなさい。","options":["ア   療養病院を有する病院について、浴室の構造設備の概要","イ   調剤室の設備の有無及び構造設備の概要","ウ   敷地の面積及び平面図","エ   敷地周囲の見取り図","オ   開設者の住所及び氏名"],"correct":5,"correct_text":"5 エ、オ","changed":[],"red":["エ","オ","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"correctline\">解答資料では、この項目が誤りとして示されています。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":27,"body":"第 27 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   医師の法定人員は、入院患者と外来患者を用いて算出される。","イ   薬剤師の法定人員は、入院患者と外来患者を用いて算出される。","ウ   病院の管理者は、その管理する病院に係る患者の状況その他の事項に関する報告書を病院所\n    在地を管轄とする都道府県知事に提出することになっている。","エ   栄養士の法定人員は、病床数 100 床以上の病院に 1 名配置することが義務付けられている。","オ   管理者は、管理者の氏名、診療に従事する医師または歯科医師の氏名、診療日及び診療時\n    間、建物の内部に関する案内を病院の入口、受付または待合所の付近の見やすい場所に掲示\n    しなければならない。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","薬剤師の法定人員は、入院患者と外来患者を用いて算出される。","薬剤師の法定人員は、入院患者と外来患者に係る取扱処方せん数を用いて算出される。"],["ウ","病院の管理者は、その管理する病院に係る患者の状況その他の事項に関する報告書を病院所 在地を管轄とする都道府県知事に提出することになっている。","病院の管理者は、その管理する病院に係る患者の状況その他の事項に関する報告書を病院所 在地を管轄とする保健所長に提出することになっている。"]],"red":["イ","外来患者に係る取扱処方せん数","ウ","保健所長","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">薬剤師の法定人員は、入院患者と外来患者<span class=\"ins\">に係る取扱処方せん数</span>を用いて算出される。</div><div class=\"correctline\"><strong>正しい文：</strong> 薬剤師の法定人員は、入院患者と外来患者に係る取扱処方せん数を用いて算出される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">病院の管理者は、その管理する病院に係る患者の状況その他の事項に関する報告書を病院所 在地を管轄とする<del>都道府県知事</del><span class=\"ins\">保健所長</span>に提出することになっている。</div><div class=\"correctline\"><strong>正しい文：</strong> 病院の管理者は、その管理する病院に係る患者の状況その他の事項に関する報告書を病院所 在地を管轄とする保健所長に提出することになっている。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":28,"body":"第 28 問 医療保険制度について誤っている文章を2つ選びなさい。","options":["ア   被用者保険は、全国健康保険協会管掌健康保険、組合管掌健康保険、船員保険、国家公務員\n    等共済組合、地方公務員等共済組合、私立学校教職員共済組合等で構成されている。","イ   国民健康保険法は、自営業者、農業専業者等の被用者保険に加入していない者を主たる対象\n    として成立した地域保険としての国民健康保険組合と同種の事業、業務に従事する者で組織\n    された国民健康保険に分かれる。","ウ   後期高齢者医療制度による医療の対象者は、７５歳以上の者及び６0 歳以上７５歳未満で後\n    期高齢者医療広域連合（以下「広域連合」）により一定の障害状態にあると認定された者であ\n    る。","エ   後期高齢者医療制度は、医療給付費の５割を公費で、４割を６４歳以下の現役世代の加入す\n    る医療保険で負担し、残りの１割を高齢者の保険料で負担する。","オ   公費負担医療制度には、法律によって行われるものと、予算的措置によって行われるものと\n    がある。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","国民健康保険法は、自営業者、農業専業者等の被用者保険に加入していない者を主たる対象 として成立した地域保険としての国民健康保険組合と同種の事業、業務に従事する者で組織 された国民健康保険に分かれる。","国民健康保険法は、自営業者、農業専業者等の被用者保険に加入していない者を主たる対象 として成立した地域保険としての国民健康保険と同種の事業、業務に従事する者で組織された 国民健康保険組合に分かれる。"],["ウ","後期高齢者医療制度による医療の対象者は、７５歳以上の者及び６0 歳以上７５歳未満で後 期高齢者医療広域連合（以下「広域連合」）により一定の障害状態にあると認定された者であ る。","後期高齢者医療制度による医療の対象者は、７５歳以上の者及び６5 歳以上７５歳未満で後 期高齢者医療広域連合（以下「広域連合」）により一定の障害状態にあると認定された者であ る。"]],"red":["イ","国民健康保険","国民健康保険組合","ウ","６5 歳以上","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">国民健康保険法は、自営業者、農業専業者等の被用者保険に加入していない者を主たる対象 として成立した地域保険としての国民健康保険<del>組合</del>と同種の事業、業務に従事する者で組織<del> </del>された<span class=\"ins\"> </span>国民健康保険<span class=\"ins\">組合</span>に分かれる。</div><div class=\"correctline\"><strong>正しい文：</strong> 国民健康保険法は、自営業者、農業専業者等の被用者保険に加入していない者を主たる対象 として成立した地域保険としての国民健康保険と同種の事業、業務に従事する者で組織された 国民健康保険組合に分かれる。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">後期高齢者医療制度による医療の対象者は、７５歳以上の者及び６<del>0</del><span class=\"ins\">5</span> 歳以上７５歳未満で後 期高齢者医療広域連合（以下「広域連合」）により一定の障害状態にあると認定された者であ る。</div><div class=\"correctline\"><strong>正しい文：</strong> 後期高齢者医療制度による医療の対象者は、７５歳以上の者及び６5 歳以上７５歳未満で後 期高齢者医療広域連合（以下「広域連合」）により一定の障害状態にあると認定された者であ る。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":29,"body":"第 29 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 「労働者災害補償保険法」は、業務上の事由又は通勤による労働者の負傷、疾病、障害、死亡\n   に対し、必要な保険給付を行う。なお、国家公務員の公務上の災害に対する補償について\n   は、これとは別に国家公務員災害補償法がある。","イ   「原子爆弾被爆者に対する援護に関する法律」は、広島市および長崎市で原爆被爆を受け、\n    都道府県知事から被爆者健康手帳の交付を受けた者に対し、公費負担で健康診断や指定医療\n    機関による必要な医療の給付を行うことを定めている。","ウ   「戦傷病者特別援護法」は、軍人・軍属であった者が公務に起因する傷病により、厚生労働\n    大臣から 戦傷病者手帳の交付を受け、さらに都道府県知事から療養券の交付を受けて指定医\n    療機関に提出した場合、療養の給付または更生医療の給付を受けることができる。","エ   「介護保険制度」は、加齢による心身の変化に起因して要介護状態になった要介護者が、尊\n    厳を保って日常生活を営むための、保健・医療・福祉サービスを給付するための、国民の共\n    同連帯の理念に基づき、要介護者を社会全体で支える新たな仕組みとして平成１7 年４月よ\n    り導入された。","オ   「公害健康被害の補償等に関する法律」は、大気汚染、または水質の汚濁の影響による健康\n    被害に対する補償として療養の給付、障害補償費などの給付を行うものであり、厚生労働大\n    臣から公害医療手帳を交付された公害認定患者に対してのみ実施される。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","「介護保険制度」は、加齢による心身の変化に起因して要介護状態になった要介護者が、尊 厳を保って日常生活を営むための、保健・医療・福祉サービスを給付するための、国民の共 同連帯の理念に基づき、要介護者を社会全体で支える新たな仕組みとして平成１7 年４月よ り導入された。","「介護保険制度」は、加齢による心身の変化に起因して要介護状態になった要介護者が、尊 厳を保って日常生活を営むための、保健・医療・福祉サービスを給付するための、国民の共 同連帯の理念に基づき、要介護者を社会全体で支える新たな仕組みとして平成１2 年４月よ り導入された。"],["オ","「公害健康被害の補償等に関する法律」は、大気汚染、または水質の汚濁の影響による健康 被害に対する補償として療養の給付、障害補償費などの給付を行うものであり、厚生労働大 臣から公害医療手帳を交付された公害認定患者に対してのみ実施される。","「公害健康被害の補償等に関する法律」は、大気汚染、または水質の汚濁の影響による健康 被害に対する補償として療養の給付、障害補償費などの給付を行うものであり、都道府県知 事（または政令市長）から公害医療手帳を交付された公害認定患者に対してのみ実施され る。"]],"red":["エ","平成１2 年４月よ","り導入された。","オ","都道府県知","事（または政令市長）","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">「介護保険制度」は、加齢による心身の変化に起因して要介護状態になった要介護者が、尊 厳を保って日常生活を営むための、保健・医療・福祉サービスを給付するための、国民の共 同連帯の理念に基づき、要介護者を社会全体で支える新たな仕組みとして平成１<del>7</del><span class=\"ins\">2</span> 年４月よ り導入された。</div><div class=\"correctline\"><strong>正しい文：</strong> 「介護保険制度」は、加齢による心身の変化に起因して要介護状態になった要介護者が、尊 厳を保って日常生活を営むための、保健・医療・福祉サービスを給付するための、国民の共 同連帯の理念に基づき、要介護者を社会全体で支える新たな仕組みとして平成１2 年４月よ り導入された。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">「公害健康被害の補償等に関する法律」は、大気汚染、または水質の汚濁の影響による健康 被害に対する補償として療養の給付、障害補償費などの給付を行うものであり、<del>厚生労働大</del><span class=\"ins\">都道府県知</span> <del>臣</del><span class=\"ins\">事（または政令市長）</span>から公害医療手帳を交付された公害認定患者に対してのみ実施され<span class=\"ins\"> </span>る。</div><div class=\"correctline\"><strong>正しい文：</strong> 「公害健康被害の補償等に関する法律」は、大気汚染、または水質の汚濁の影響による健康 被害に対する補償として療養の給付、障害補償費などの給付を行うものであり、都道府県知 事（または政令市長）から公害医療手帳を交付された公害認定患者に対してのみ実施され る。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":30,"body":"第 30 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   保険診療を行うためには、病院・診療所が保険医療を行う機関として地方厚生局長から指定\n    を受け、さらに医師が保険医として登録されていなければならない。これを二重指定制とい\n    う。","イ   健康保険法で指定された病院等を「保険医療機関」といい、登録された医師を「保険医」と\n    いう。保険医療機関、保険医の指定を受けると、特に手続をしなくても、その他の医療保険\n    の保険診療ができることとなっている。","ウ   治験対象の薬物を使用する場合、厚生労働大臣の定める「薬価基準」に収載されている医薬\n    品以外の薬物を患者に使用してはならない。","エ   療養担当規則には、保険医療機関が保険診療を行うにあたっての療養担当を定めたものと、\n    保険医が保険診療を行う際の治療方針等を定めたものに大別できる。","オ   投薬量は、予見することができる必要期間に従ったものでなければならないこととし、厚生\n    労働大臣が定める内服薬及び外用薬については当該厚生労働大臣が定める内服薬及び外用薬\n    ごとに１回１４日分、３０日分又は 6０日分を限度とする。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ア","保険診療を行うためには、病院・診療所が保険医療を行う機関として地方厚生局長から指定 を受け、さらに医師が保険医として登録されていなければならない。これを二重指定制とい う。","保険診療を行うためには、病院・診療所が保険医療を行う機関として厚生労働大臣から指定 を受け、さらに医師が保険医として登録されていなければならない。これを二重指定制とい う。"],["ウ","治験対象の薬物を使用する場合、厚生労働大臣の定める「薬価基準」に収載されている医薬 品以外の薬物を患者に使用してはならない。","治験対象の薬物を使用する場合、厚その他厚生労働大臣が定める場合においてはこの限りで ない。"],["オ","投薬量は、予見することができる必要期間に従ったものでなければならないこととし、厚生 労働大臣が定める内服薬及び外用薬については当該厚生労働大臣が定める内服薬及び外用薬 ごとに１回１４日分、３０日分又は 6０日分を限度とする。","投薬量は、予見することができる必要期間に従ったものでなければならないこととし、厚生 労働大臣が定める内服薬及び外用薬については当該厚生労働大臣が定める内服薬及び外用薬 ごとに１回１４日分、３０日分又は 9０日分を限度とする。"]],"red":["ウ","その他厚生労働大臣が定める場合においてはこの限りで","ない。","オ","9０日分","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">治験対象の薬物を使用する場合、厚<span class=\"ins\">その他厚</span>生労働大臣<del>の</del><span class=\"ins\">が</span>定める<del>「薬価基準」</del><span class=\"ins\">場合</span>に<del>収載されて</del><span class=\"ins\">お</span>い<del>る医薬 品以外の薬物を患者に使用し</del>ては<del>なら</del><span class=\"ins\">この限りで </span>ない。</div><div class=\"correctline\"><strong>正しい文：</strong> 治験対象の薬物を使用する場合、厚その他厚生労働大臣が定める場合においてはこの限りで ない。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">投薬量は、予見することができる必要期間に従ったものでなければならないこととし、厚生 労働大臣が定める内服薬及び外用薬については当該厚生労働大臣が定める内服薬及び外用薬 ごとに１回１４日分、３０日分又は <del>6</del><span class=\"ins\">9</span>０日分を限度とする。</div><div class=\"correctline\"><strong>正しい文：</strong> 投薬量は、予見することができる必要期間に従ったものでなければならないこととし、厚生 労働大臣が定める内服薬及び外用薬については当該厚生労働大臣が定める内服薬及び外用薬 ごとに１回１４日分、３０日分又は 9０日分を限度とする。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":31,"body":"第 31 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   診療報酬とは、保険医が、保険医療機関において保険診療を行った場合に、その診療行為に\n    対して支払われる対価のことである。","イ   診療報酬は、「健康保険法の規定による療養に要する費用の額の算定方法」により診療行為ご\n    とに点数が定められており、厳正な解釈のもとに運用されている。点数表に定めのない診療\n    行為については、厚生労働省保険局に協議しなければならず、勝手な解釈によることは許さ\n    れない。","ウ   国保連合会は、各都道府県に支部を置き、また、支払基金は各都道府県に独立した機関とし\n    て設置されている。","エ   保険医療機関は他府県の被保険者の診療報酬もその保険医療機関の所在地の支払基金等に請\n    求する。","オ   国保連合会には、健康保険等の職域保険、健康保険等と公費の併用、公費単独負担の医療費\n    等の診療報酬を請求し、支払基金には、国民健康保険、国民健康保険と公費の併用、後期高\n    齢者医療制度の診療報酬を請求する。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","国保連合会は、各都道府県に支部を置き、また、支払基金は各都道府県に独立した機関とし て設置されている。","支払基金は、各都道府県に支部を置き、また、国保連合会は各都道府県に独立した機関とし て設置されている。"],["オ","国保連合会には、健康保険等の職域保険、健康保険等と公費の併用、公費単独負担の医療費 等の診療報酬を請求し、支払基金には、国民健康保険、国民健康保険と公費の併用、後期高 齢者医療制度の診療報酬を請求する。","支払基金には、健康保険等の職域保険、健康保険等と公費の併用、公費単独負担の医療費等 の診療報酬を請求し、国保連合会には、国民健康保険、国民健康保険と公費の併用、後期高 齢者医療制度の診療報酬を請求する。"]],"red":["ウ","支払基金","国保連合会","オ","支払基金","国保連合会","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\"><del>国保連合会</del><span class=\"ins\">支払基金</span>は、各都道府県に支部を置き、また、<del>支払基金</del><span class=\"ins\">国保連合会</span>は各都道府県に独立した機関とし て設置されている。</div><div class=\"correctline\"><strong>正しい文：</strong> 支払基金は、各都道府県に支部を置き、また、国保連合会は各都道府県に独立した機関とし て設置されている。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\"><del>国保連合会</del><span class=\"ins\">支払基金</span>には、健康保険等の職域保険、健康保険等と公費の併用、公費単独負担の医療費<span class=\"ins\">等</span> <del>等</del>の診療報酬を請求し、<del>支払基金</del><span class=\"ins\">国保連合会</span>には、国民健康保険、国民健康保険と公費の併用、後期高 齢者医療制度の診療報酬を請求する。</div><div class=\"correctline\"><strong>正しい文：</strong> 支払基金には、健康保険等の職域保険、健康保険等と公費の併用、公費単独負担の医療費等 の診療報酬を請求し、国保連合会には、国民健康保険、国民健康保険と公費の併用、後期高 齢者医療制度の診療報酬を請求する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":32,"body":"第 32 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 薬剤師以外の者が、販売又は授与の目的で調剤してはならない。ただし、医師、歯科医師また\n  は獣医師が自己の処方せんにより自ら調剤するときは、この限りでない。","イ 処方せん中に疑わしい点があるときは、処方せんを交付した医師等に問い合せて、確かめた後\n  でなければ、調剤してはならない。","ウ 調剤したときは、処方せんに、患者の氏名、用法、用量、調剤年月日、調剤した薬剤師の氏\n  名、病院の名称及び所在地を記載しなければならない。","エ 調剤した薬剤の適正な使用のため、患者又はその看護に当たっている者に対し、必要な情報を\n  提供し、必要な薬学的知見に基づく指導を行わなければならない。","オ 調剤したときは、調剤した薬剤の容器及び被包に調剤済みの旨（その調剤によって調剤済みと\n  ならなかったときは、調剤量）、調剤年月日、病院の名称・所在地、医師等の同意を得て記載\n  された医薬品を変更して調剤した場合には、その変更内容、医師等に疑わしい点を確かめた場\n  合には、その回答を記入し、記名押印し、又は署名しなければならない。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","調剤したときは、処方せんに、患者の氏名、用法、用量、調剤年月日、調剤した薬剤師の氏 名、病院の名称及び所在地を記載しなければならない。","調剤したときは、調剤した薬剤の容器及び被包に、患者の氏名、用法、用量、調剤年月日、調 剤した薬剤師の氏名、病院の名称及び所在地を記載しなければならない。"],["オ","調剤したときは、調剤した薬剤の容器及び被包に調剤済みの旨（その調剤によって調剤済みと ならなかったときは、調剤量）、調剤年月日、病院の名称・所在地、医師等の同意を得て記載 された医薬品を変更して調剤した場合には、その変更内容、医師等に疑わしい点を確かめた場 合には、その回答を記入し、記名押印し、又は署名しなければならない。","調剤したときは、処方せんに調剤済みの旨（その調剤によって調剤済みとならなかったとき は、調剤量）、調剤年月日、病院の名称・所在地、医師等の同意を得て記載された医薬品を変 更して調剤した場合には、その変更内容、医師等に疑わしい点を確かめた場合には、その回答 を記入し、記名押印し、又は署名しなければならない。"]],"red":["ウ","調剤した薬剤の容器及び被包","オ","処方せん","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">調剤したときは、<del>処方せん</del><span class=\"ins\">調剤した薬剤の容器及び被包</span>に、患者の氏名、用法、用量、調剤年月日、調<span class=\"ins\"> </span>剤した薬剤師の氏<del> </del>名、病院の名称及び所在地を記載しなければならない。</div><div class=\"correctline\"><strong>正しい文：</strong> 調剤したときは、調剤した薬剤の容器及び被包に、患者の氏名、用法、用量、調剤年月日、調 剤した薬剤師の氏名、病院の名称及び所在地を記載しなければならない。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">調剤したときは、<del>調剤した薬剤の容器及び被包</del><span class=\"ins\">処方せん</span>に調剤済みの旨（その調剤によって調剤済みと<del> </del>ならなかったとき<span class=\"ins\"> </span>は、調剤量）、調剤年月日、病院の名称・所在地、医師等の同意を得て記載<del> </del>された医薬品を変<span class=\"ins\"> </span>更して調剤した場合には、その変更内容、医師等に疑わしい点を確かめた場<del> </del>合には、その回答<span class=\"ins\"> </span>を記入し、記名押印し、又は署名しなければならない。</div><div class=\"correctline\"><strong>正しい文：</strong> 調剤したときは、処方せんに調剤済みの旨（その調剤によって調剤済みとならなかったとき は、調剤量）、調剤年月日、病院の名称・所在地、医師等の同意を得て記載された医薬品を変 更して調剤した場合には、その変更内容、医師等に疑わしい点を確かめた場合には、その回答 を記入し、記名押印し、又は署名しなければならない。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":33,"body":"第 33 問 次の中から誤っている文章を2つ選びなさい。","options":["ア    作業療法士は、厚生労働大臣の免許を持ち、医師の指示の下に、身体に障害のある者に治療\n    体操などの運動を行わせたり、電気刺激、マッサージ、温熱などの物理的手段を加えたりし\n    て、主にその基本的運動能力の回復を図ることを業務内容とする。","イ    理学療法士は、厚生労働大臣の免許を持ち、身体または精神に障害のある者に、手芸工作そ\n    の他の作業を行わせ、主としてその応用的動作能力や社会的適応能力の回復を図ることを業務\n    内容とする。","ウ    臨床工学技士は、厚生労働大臣の免許を持ち、医師の指示の下に、生命維持管理装置の操作\n    及び保守点検を行うことを業務内容とする。生命維持管理装置とは、人の呼吸、循環または代\n    謝の機能の一部を代替し、または補助することが目的とされている装置をいう。","エ    歯科衛生士は、厚生労働大臣の免許を持ち、歯牙及び口くうの疾患の予防のため歯科医師の\n    直接の指導の下に行う歯石等の除去及びフッ素等薬物の塗布並びに歯科診療の補助並びに歯科\n    衛生士の名称を用いて歯科保健指導を行うことを業務内容とする。","オ    救急救命士は、厚生労働大臣の免許を持ち、救急救命士の名称を用いて、医師の指示の下\n    に、原則として救急用自動車等の車内において、救急救命処置を行うことを業務内容とする。"],"correct":1,"correct_text":"１ ア、イ","changed":[["ア","作業療法士は、厚生労働大臣の免許を持ち、医師の指示の下に、身体に障害のある者に治療 体操などの運動を行わせたり、電気刺激、マッサージ、温熱などの物理的手段を加えたりし て、主にその基本的運動能力の回復を図ることを業務内容とする。","理学療法士は、厚生労働大臣の免許を持ち、医師の指示の下に、身体に障害のある者に治療 体操などの運動を行わせたり、電気刺激、マッサージ、温熱などの物理的手段を加えたりし て、主にその基本的運動能力の回復を図ることを業務内容とする。"],["イ","理学療法士は、厚生労働大臣の免許を持ち、身体または精神に障害のある者に、手芸工作そ の他の作業を行わせ、主としてその応用的動作能力や社会的適応能力の回復を図ることを業務 内容とする。","作業療法士は、厚生労働大臣の免許を持ち、身体または精神に障害のある者に、手芸工作そ の他の作業を行わせ、主としてその応用的動作能力や社会的適応能力の回復を図ることを業務 内容とする。"]],"red":["ア","理学療法士","イ","作業療法士","１ ア、イ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ア、イ</div><div class=\"diffblock\"><div class=\"difflabel\">ア</div><div class=\"diffline\"><del>作業</del><span class=\"ins\">理学</span>療法士は、厚生労働大臣の免許を持ち、医師の指示の下に、身体に障害のある者に治療 体操などの運動を行わせたり、電気刺激、マッサージ、温熱などの物理的手段を加えたりし て、主にその基本的運動能力の回復を図ることを業務内容とする。</div><div class=\"correctline\"><strong>正しい文：</strong> 理学療法士は、厚生労働大臣の免許を持ち、医師の指示の下に、身体に障害のある者に治療 体操などの運動を行わせたり、電気刺激、マッサージ、温熱などの物理的手段を加えたりし て、主にその基本的運動能力の回復を図ることを業務内容とする。</div></div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\"><del>理学</del><span class=\"ins\">作業</span>療法士は、厚生労働大臣の免許を持ち、身体または精神に障害のある者に、手芸工作そ の他の作業を行わせ、主としてその応用的動作能力や社会的適応能力の回復を図ることを業務 内容とする。</div><div class=\"correctline\"><strong>正しい文：</strong> 作業療法士は、厚生労働大臣の免許を持ち、身体または精神に障害のある者に、手芸工作そ の他の作業を行わせ、主としてその応用的動作能力や社会的適応能力の回復を図ることを業務 内容とする。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ア","イ"],"required":2},{"id":34,"body":"第 34 問 医療事故と法的責任として誤っている文章を2つ選びなさい。","options":["ア 訴訟とは、示談、調停とも不成立になると、民事訴訟が起こされる。訴訟で損害賠償請求する\n  法律である。","イ 免許を取得している医療従事者が罰金以上の刑に処せられた場合、倫理の観点からその適正等\n  を問い、法により免許の取り消し、あるいは業務の一時停止という行政上の責任が問われる。\n  この処分は、任命権者が命ずる。","ウ 示談とは、当事者間でお互いに話し合って、紛争を解決するもので、民法上では調停という。","エ 医療事故で問われる刑事上の責任は、業務上過失致死傷罪である。","オ 調停とは、示談が不成立の場合、または初めから示談の成立の可能性がないときに、簡易裁判\n  所に調停を申し立て、公平な調停委員を中に入れて解決することをいう。"],"correct":2,"correct_text":"２ イ、ウ","changed":[["イ","免許を取得している医療従事者が罰金以上の刑に処せられた場合、倫理の観点からその適正等 を問い、法により免許の取り消し、あるいは業務の一時停止という行政上の責任が問われる。 この処分は、任命権者が命ずる。","免許を取得している医療従事者が罰金以上の刑に処せられた場合、倫理の観点からその適正等 を問い、法により免許の取り消し、あるいは業務の一時停止という行政上の責任が問われる。 この処分は、厚生労働大臣が命ずる。"],["ウ","示談とは、当事者間でお互いに話し合って、紛争を解決するもので、民法上では調停という。","示談とは、当事者間でお互いに話し合って、紛争を解決するもので、民法上では和解という。"]],"red":["イ","厚生労働大臣","ウ","和解","２ イ、ウ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、ウ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">免許を取得している医療従事者が罰金以上の刑に処せられた場合、倫理の観点からその適正等 を問い、法により免許の取り消し、あるいは業務の一時停止という行政上の責任が問われる。 この処分は、<del>任命権者</del><span class=\"ins\">厚生労働大臣</span>が命ずる。</div><div class=\"correctline\"><strong>正しい文：</strong> 免許を取得している医療従事者が罰金以上の刑に処せられた場合、倫理の観点からその適正等 を問い、法により免許の取り消し、あるいは業務の一時停止という行政上の責任が問われる。 この処分は、厚生労働大臣が命ずる。</div></div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">示談とは、当事者間でお互いに話し合って、紛争を解決するもので、民法上では<del>調停</del><span class=\"ins\">和解</span>という。</div><div class=\"correctline\"><strong>正しい文：</strong> 示談とは、当事者間でお互いに話し合って、紛争を解決するもので、民法上では和解という。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","ウ"],"required":2},{"id":35,"body":"第 35 問 患者影響レベルについて正しい文章を2つ選びなさい。","options":["ア    影響レベル 2 までが「ヒヤリ・ハット事例（＝インシデント事例）」、レベル 3a 以上が「医療\n    事故」とする。","イ    レベル２は行った医療又は管理により、患者に影響を与えた、又は何らかの影響を与えた可\n    能性がある場合で、障害の程度及び〔継続性〕は軽度〔一過性〕である。","ウ    レベル３b は行った医療又は管理により、本来必要でなかった治療や処置が必要となった場\n    合で、障害の程度及び〔継続性〕は中・高度〔一過性〕である。","エ    レベル４は行った医療又は管理により、生活に影響する重大な永続的障害が発生した可能性\n    がある場合で、障害の程度及び〔継続性〕は高度〔死亡〕である。","オ    レベル１は誤った行為を患者に実施したが、結果として患者に影響を及ぼすに至らなかった\n    場合で、障害の程度及び〔継続性〕はなしである。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ア","影響レベル 2 までが「ヒヤリ・ハット事例（＝インシデント事例）」、レベル 3a 以上が「医療 事故」とする。","影響レベル３ａまでが「ヒヤリ・ハット事例（＝インシデント事例）」、レベル３ｂ以上が 「医療事故」とする。"],["イ","レベル２は行った医療又は管理により、患者に影響を与えた、又は何らかの影響を与えた可 能性がある場合で、障害の程度及び〔継続性〕は軽度〔一過性〕である。","レベル２は行った医療又は管理により、患者に影響を与えた、又は何らかの影響を与えた可 能性がある場合で、障害の程度及び〔継続性〕は軽度なしである。"],["エ","レベル４は行った医療又は管理により、生活に影響する重大な永続的障害が発生した可能性 がある場合で、障害の程度及び〔継続性〕は高度〔死亡〕である。","レベル４は行った医療又は管理により、生活に影響する重大な永続的障害が発生した可能性 がある場合で、障害の程度及び〔継続性〕は高度〔永続的〕である。"]],"red":["３ａまで","３ｂ以上","なし","ウ","〔永続的〕","オ","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>正しい項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"correctline\">レベル３b は行った医療又は管理により、本来必要でなかった治療や処置が必要となった場 合で、障害の程度及び〔継続性〕は中・高度〔一過性〕である。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"correctline\">レベル１は誤った行為を患者に実施したが、結果として患者に影響を及ぼすに至らなかった 場合で、障害の程度及び〔継続性〕はなしである。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":36,"body":"第 36 問 次の中から誤っている文章を2つ選びなさい。","options":["ア    医薬品安全管理責任者は、院長の指名により選任され、医薬品の安全使用を確保するための\n    業務を行う責任者をいう。","イ    医療安全管理委員会の委員長は、原則として副院長、副委員長は、原則として医療安全管理\n    者及び診療部長とする。","ウ    医療安全管理者は、医療安全に関する十分な知識を有する者とする（医療安全管理者の養成\n    を目的とした研修で、通算して４0 時間以上の研修を終了した者）。","エ    医療安全管理者は、院長の指名により選任され、医療安全推進担当者を指導し、連携・協同\n    の上、特定の部門ではなく病院全般にかかる医療安全対策の立案・実行・評価を含め、医療安\n    全管理のための組織横断的な活動を行う者をいい、副院長をもって充てるものとする。","オ    医療事故調査制度に該当する事案であって、かつ、院内の医療安全管理委員会で、原因等に\n    ついて十分な結論づけができない場合等には、院長は、第三者的立場から検証を行うため、グ\n    ループ担当者及び専門医又は看護師等の外部委員を参画させた拡大医療安全検討委員会を開催\n    する。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","医療安全管理者は、院長の指名により選任され、医療安全推進担当者を指導し、連携・協同 の上、特定の部門ではなく病院全般にかかる医療安全対策の立案・実行・評価を含め、医療安 全管理のための組織横断的な活動を行う者をいい、副院長をもって充てるものとする。","医療安全管理者は、院長の指名により選任され、医療安全推進担当者を指導し、連携・協同 の上、特定の部門ではなく病院全般にかかる医療安全対策の立案・実行・評価を含め、医療安 全管理のための組織横断的な活動を行う者をいい、看護師長をもって充てるものとする。"],["オ","医療事故調査制度に該当する事案であって、かつ、院内の医療安全管理委員会で、原因等に ついて十分な結論づけができない場合等には、院長は、第三者的立場から検証を行うため、グ ループ担当者及び専門医又は看護師等の外部委員を参画させた拡大医療安全検討委員会を開催 する。","医療事故調査制度に該当しない事案であって、かつ、院内の医療安全管理委員会で、原因等 について十分な結論づけができない場合等には、院長は、第三者的立場から検証を行うため、 グループ担当者及び専門医又は看護師等の外部委員を参画させた拡大医療安全検討委員会を開 催する。"]],"red":["エ","看護師長","オ","医療事故調査制度に該当しない事案","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">医療安全管理者は、院長の指名により選任され、医療安全推進担当者を指導し、連携・協同 の上、特定の部門ではなく病院全般にかかる医療安全対策の立案・実行・評価を含め、医療安 全管理のための組織横断的な活動を行う者をいい、<del>副院</del><span class=\"ins\">看護師</span>長をもって充てるものとする。</div><div class=\"correctline\"><strong>正しい文：</strong> 医療安全管理者は、院長の指名により選任され、医療安全推進担当者を指導し、連携・協同 の上、特定の部門ではなく病院全般にかかる医療安全対策の立案・実行・評価を含め、医療安 全管理のための組織横断的な活動を行う者をいい、看護師長をもって充てるものとする。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">医療事故調査制度に該当<del>する</del><span class=\"ins\">しない</span>事案であって、かつ、院内の医療安全管理委員会で、原因等<span class=\"ins\"> </span>に<del> </del>ついて十分な結論づけができない場合等には、院長は、第三者的立場から検証を行うため、<span class=\"ins\"> </span>グ<del> </del>ループ担当者及び専門医又は看護師等の外部委員を参画させた拡大医療安全検討委員会を開<span class=\"ins\"> </span>催<del> </del>する。</div><div class=\"correctline\"><strong>正しい文：</strong> 医療事故調査制度に該当しない事案であって、かつ、院内の医療安全管理委員会で、原因等 について十分な結論づけができない場合等には、院長は、第三者的立場から検証を行うため、 グループ担当者及び専門医又は看護師等の外部委員を参画させた拡大医療安全検討委員会を開 催する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":37,"body":"第 37 問 次の中から誤っている文章を2つ選びなさい。","options":["ア   外来患者数とは、０時から２４時までに新来、再来、往診を問わず、受け付けた患者数であ\n    る。外来の同一患者が２以上の診療科で診療を受けた場合は、それぞれの診療科の外来患者\n    数とする。また、ある診療科の在院患者が、他の診療科において外来診療を受診した場合\n    も、その診療科の外来患者とする。","イ   １日平均在院患者数とは在院患者延数を暦日数で除した数である。","ウ   在院患者数とは、２４時現在に在院していた患者数（外泊患者を含む）であり、０時過ぎに\n    入院し、当日の２４時前に退院（死亡を含む）した者も在院患者数に算入される。","エ   病床利用率は（1 日平均在患者数÷病床数）×100 で算出される。","オ   平均在院日数は 在院患者延数÷（新入院患者＋退院患者数）で算出される。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","在院患者数とは、２４時現在に在院していた患者数（外泊患者を含む）であり、０時過ぎに 入院し、当日の２４時前に退院（死亡を含む）した者も在院患者数に算入される。","在院患者数とは、２４時現在に在院していた患者数（外泊患者を含む）であり、０時過ぎに 入院し、当日の２４時前に退院（死亡を含む）した者も在院患者数に算入しない。"],["オ","平均在院日数は 在院患者延数÷（新入院患者＋退院患者数）で算出される。","平均在院日数は（在院患者延数÷（新入院患者＋退院患者数）÷2）で算出される。"]],"red":["ウ","算入しない。","オ","÷2","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">在院患者数とは、２４時現在に在院していた患者数（外泊患者を含む）であり、０時過ぎに 入院し、当日の２４時前に退院（死亡を含む）した者も在院患者数に算入<del>される</del><span class=\"ins\">しない</span>。</div><div class=\"correctline\"><strong>正しい文：</strong> 在院患者数とは、２４時現在に在院していた患者数（外泊患者を含む）であり、０時過ぎに 入院し、当日の２４時前に退院（死亡を含む）した者も在院患者数に算入しない。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">平均在院日数は<del> </del><span class=\"ins\">（</span>在院患者延数÷（新入院患者＋退院患者数）<span class=\"ins\">÷2）</span>で算出される。</div><div class=\"correctline\"><strong>正しい文：</strong> 平均在院日数は（在院患者延数÷（新入院患者＋退院患者数）÷2）で算出される。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":38,"body":"第 38 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 病床回転数は（暦日数÷平均在院日数）で算出される。","イ 医療機器使用効率は（Ｂ・Ｃ・Ｄ類実診療額÷医療機器保有額（５０万円以上））×100 で\n  算出される。","ウ 薬品比率は（薬品消費額（A 類）÷実診療総額）×100 で算出される。","エ 在院患者 1 人 1 日当たり診療点数は（診療点数÷１日平均在院患者数）で算出される。","オ 平均通院回数は（新外来患者数÷外来患者延数）で算出される。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","在院患者 1 人 1 日当たり診療点数は（診療点数÷１日平均在院患者数）で算出される。","在院患者 1 人 1 日当たり診療点数は（診療点数÷在院患者延数）で算出される。"],["オ","平均通院回数は（新外来患者数÷外来患者延数）で算出される。","平均通院回数は（外来患者延数÷新外来患者数）で算出される。"]],"red":["エ","在院患者延数","オ","新","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">在院患者 1 人 1 日当たり診療点数は（診療点数÷<del>１日平均</del>在院患者<span class=\"ins\">延</span>数）で算出される。</div><div class=\"correctline\"><strong>正しい文：</strong> 在院患者 1 人 1 日当たり診療点数は（診療点数÷在院患者延数）で算出される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">平均通院回数は（<span class=\"ins\">外来患者延数÷</span>新外来患者<del>数÷外来患者延</del>数）で算出される。</div><div class=\"correctline\"><strong>正しい文：</strong> 平均通院回数は（外来患者延数÷新外来患者数）で算出される。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":39,"body":"第 39 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 部下に対してどのような研修が必要か、という「研修ニーズ」は監督者が一番よく把握できる\n  立場にあるため、監督者は部下に期待する能力の水準や実際の能力等を留意し部下に対して適\n  切な研修を受講させるように心掛ける必要がある。","イ 職場研修とは、職場の監督者が本来の業務を通じて、または、業務に関連させつつ部下を指導\n  する形で行われるものである。","ウ 職場研修は、①研修ニーズと指導目標の明確化、②指導の具体的な方法の決定、③研修の実\n  施、④事後の評価を意図的、計画的に行わなければならない。","エ 職員が本来行うこととされている業務から離れて、職務の一環として行われるものを、「職場\n  研修」に対して「職場外研修」といい、例えば、新規採用者研修や中堅職員研修等をいう。","オ 「職場研修」と「職場外研修」の関係としては、「職場研修」において原則的体系的な知識や\n  技能を習得させ、それを職場で実践させつつ「職場外研修」で原則の弾力的な応用を指導す\n  る、というように両社は補完関係にある。"],"correct":3,"correct_text":"3 イ、オ","changed":[["イ","職場研修とは、職場の監督者が本来の業務を通じて、または、業務に関連させつつ部下を指導 する形で行われるものである。","職場研修とは、職場の上司が本来の業務を通じて、または、業務に関連させつつ部下を指導す る形で行われるものである。"],["オ","「職場研修」と「職場外研修」の関係としては、「職場研修」において原則的体系的な知識や 技能を習得させ、それを職場で実践させつつ「職場外研修」で原則の弾力的な応用を指導す る、というように両社は補完関係にある。","「職場研修」と「職場外研修」の関係としては、「職場外研修」において原則的体系的な知識 や技能を習得させ、それを職場で実践させつつ「職場研修」で原則の弾力的な応用を指導す る、というように両社は補完関係にある。"]],"red":["イ","上司","オ","「職場外研修」","「職場研修」","3 イ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">職場研修とは、職場の<del>監督者</del><span class=\"ins\">上司</span>が本来の業務を通じて、または、業務に関連させつつ部下を指導<span class=\"ins\">す</span> <del>す</del>る形で行われるものである。</div><div class=\"correctline\"><strong>正しい文：</strong> 職場研修とは、職場の上司が本来の業務を通じて、または、業務に関連させつつ部下を指導す る形で行われるものである。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">「職場研修」と「職場外研修」の関係としては、「職場<span class=\"ins\">外</span>研修」において原則的体系的な知識<span class=\"ins\"> </span>や<del> </del>技能を習得させ、それを職場で実践させつつ「職場<del>外</del>研修」で原則の弾力的な応用を指導す る、というように両社は補完関係にある。</div><div class=\"correctline\"><strong>正しい文：</strong> 「職場研修」と「職場外研修」の関係としては、「職場外研修」において原則的体系的な知識 や技能を習得させ、それを職場で実践させつつ「職場研修」で原則の弾力的な応用を指導す る、というように両社は補完関係にある。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","オ"],"required":2},{"id":40,"body":"第 40 問 次の中から誤っている文章を2つ選びなさい。","options":["ア リーダーシップの定義は「集団の目標や課題を達成するために、その集団内の一部の人がほか\n  の人に影響を及ぼす現象」とされている。","イ 指示型はリーダーが自分に権限を集中して、部下に一方的に指示して業務させる型である。","ウ 関与型はリーダーが業務の遂行について部下に相談し、関与させて業務をさせる型である。","エ 委任型はリーダーが部下に権限を譲渡して、部下の判断で業務させる型である。","オ 下の状況との関係だけでいえば、業務遂行能力や意欲が高まるにつれて、部下の自主性を広げ\n  ることが望ましいことから、一般的には「指示型」から「委任型」へ、さらには「関与型」へ\n  と移行していく方法が適切であると考えられる。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","関与型はリーダーが業務の遂行について部下に相談し、関与させて業務をさせる型である。","参加型はリーダーが業務の遂行について部下に相談し、関与させて業務をさせる型である。"],["オ","下の状況との関係だけでいえば、業務遂行能力や意欲が高まるにつれて、部下の自主性を広げ ることが望ましいことから、一般的には「指示型」から「委任型」へ、さらには「関与型」へ と移行していく方法が適切であると考えられる。","下の状況との関係だけでいえば、業務遂行能力や意欲が高まるにつれて、部下の自主性を広げ ることが望ましいことから、一般的には「指示型」から「参加型」へ、さらには「委任型」へ と移行していく方法が適切であると考えられる。"]],"red":["ウ","参加型","オ","参加型","委任型","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\"><del>関与</del><span class=\"ins\">参加</span>型はリーダーが業務の遂行について部下に相談し、関与させて業務をさせる型である。</div><div class=\"correctline\"><strong>正しい文：</strong> 参加型はリーダーが業務の遂行について部下に相談し、関与させて業務をさせる型である。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">下の状況との関係だけでいえば、業務遂行能力や意欲が高まるにつれて、部下の自主性を広げ ることが望ましいことから、一般的には「指示型」から「<del>委任</del><span class=\"ins\">参加</span>型」へ、さらには「<del>関与</del><span class=\"ins\">委任</span>型」へ と移行していく方法が適切であると考えられる。</div><div class=\"correctline\"><strong>正しい文：</strong> 下の状況との関係だけでいえば、業務遂行能力や意欲が高まるにつれて、部下の自主性を広げ ることが望ましいことから、一般的には「指示型」から「参加型」へ、さらには「委任型」へ と移行していく方法が適切であると考えられる。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":41,"body":"第 41 問 3 枚の頭部単純デジタルエックス線撮影を行った場合の［診断料］と［撮影料］の組み\n       合わせで正しいものを選びなさい。ただし、1 枚に対する頭部単純デジタルエックス線\n       撮影の［診断料］は 85 点、［撮影料］は 68 点とする。","options":["［診断料］255 点 ［撮影料］204 点","［診断料］170 点 ［撮影料］204 点","［診断料］255 点 ［撮影料］136 点","［診断料］170 点 ［撮影料］136 点","［診断料］148 点 ［撮影料］119 点"],"correct":4,"correct_text":"4.［診断料］170 点 ［撮影料］136 点","changed":[],"red":["4.［診断料］170 点 ［撮影料］136 点"],"explanation_html":"<div class=\"answerline\"><strong>正解：</strong> 4. ［診断料］170 点 ［撮影料］136 点</div><div class=\"diffblock\"><div class=\"difflabel\">3枚の頭部単純デジタルエックス線撮影を行った場合</div><div>【診断料】85点＋85点×0.5×2＝170点</div><div>【撮影料】68点＋68点×0.5×2＝136点</div></div><div class=\"diffblock\"><div class=\"difflabel\">参考：2枚の胸部アナログエックス線間接撮影を行った場合</div><div>【診断料】85点×0.5＋85点×0.5×0.5＝63.75点 →（四捨五入）→64点</div><div>【撮影料】60点×0.5＋60点×0.5×0.5＝45点</div></div>","mode":"single"},{"id":42,"body":"第 42 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 動脈造影カテーテル法では主要⾎管の分枝⾎管を選択的に造影撮影した場合 3,600 点が加算\n  される。","イ 頸動脈閉塞試験（マタス試験）を実施した場合は、頸動脈閉塞試験加算として、500 点を所定\n  点数に加算する。","ウ ⾎流予備能測定検査を実施した場合は、⾎流予備能測定検査加算として、400 点を所定点数に\n  加算される。","エ 静脈造影カテーテル法では 3,600 点が加算される。","オ 腔内注入および穿刺注入は、注腸が 360 点、その他のものが 120 点加算される。"],"correct":1,"correct_text":"１ ア、イ","changed":[["ア","動脈造影カテーテル法では主要⾎管の分枝⾎管を選択的に造影撮影した場合 3,600 点が加算 される。","動脈造影カテーテル法では主要⾎管の分枝⾎管を選択的に造影撮影した場合 4,320 点が加算 される。"],["イ","頸動脈閉塞試験（マタス試験）を実施した場合は、頸動脈閉塞試験加算として、500 点を所定 点数に加算する。","頸動脈閉塞試験（マタス試験）を実施した場合は、頸動脈閉塞試験加算として、1000 点を所 定点数に加算する。"]],"red":["4,320 点","1000 点","１ ア、イ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ア、イ</div><div class=\"diffblock\"><div class=\"difflabel\">ア</div><div class=\"diffline\">動脈造影カテーテル法では主要⾎管の分枝⾎管を選択的に造影撮影した場合 <span class=\"ins\">4,</span>3<del>,60</del><span class=\"ins\">2</span>0 点が加算 される。</div><div class=\"correctline\"><strong>正しい文：</strong> 動脈造影カテーテル法では主要⾎管の分枝⾎管を選択的に造影撮影した場合 4,320 点が加算 される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">頸動脈閉塞試験（マタス試験）を実施した場合は、頸動脈閉塞試験加算として、<del>5</del><span class=\"ins\">10</span>00 点を所<span class=\"ins\"> </span>定<del> </del>点数に加算する。</div><div class=\"correctline\"><strong>正しい文：</strong> 頸動脈閉塞試験（マタス試験）を実施した場合は、頸動脈閉塞試験加算として、1000 点を所 定点数に加算する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ア","イ"],"required":2},{"id":43,"body":"第 43 問 シングルホトンエミッションコンピューター断層撮影について、次の中から誤っている\n       文章を2つ選びなさい。","options":["ア シングルホトンエミッションコンピューター断層撮影を行った場合、（同一のラジオアイソト\n  ープを用いた一連の検査につき）1,800 点が加算される。","イ 甲状腺シンチグラム検査に当たって、甲状腺ラジオアイソトープ摂取率を測定した 場合は、\n  甲状腺ラジオアイソトープ摂取率測定加算として、100 点を所定点数に加算する。","ウ 新生児、３歳未満の乳幼児（新生児を除 く。）又は３歳以上６歳未満の幼児に対して断層撮影\n  を行った場合は、新生児加算、 乳幼児加算又は幼児加算として、1,600 点、1,000 点又は\n  600 点を所定点数に加算する。","エ ラジオアイソトープの注入手技料は、所定点数に含まれるものとする。","オ 負荷試験を行った場合は、負荷の種類又は測定回数にかかわらず、断層撮影負荷試験加算とし\n  て、所定点数の 100 分の 80 に相当する点数を加算する。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","新生児、３歳未満の乳幼児（新生児を除 く。）又は３歳以上６歳未満の幼児に対して断層撮影 を行った場合は、新生児加算、 乳幼児加算又は幼児加算として、1,600 点、1,000 点又は 600 点を所定点数に加算する。","新生児、３歳未満の乳幼児（新生児を除 く。）又は３歳以上６歳未満の幼児に対して断層撮影 を行った場合は、新生児加算、 乳幼児加算又は幼児加算として、所定点数に それぞれ所定点 数の 100 分の 80、100 分の 50 又は 100 分の 30 に相当する点数を加算する。"],["オ","負荷試験を行った場合は、負荷の種類又は測定回数にかかわらず、断層撮影負荷試験加算とし て、所定点数の 100 分の 80 に相当する点数を加算する。","負荷試験を行った場合は、負荷の種類又は測定回数にかかわらず、断層撮影負荷試験加算とし て、所定点数の 100 分の 50 に相当する点数を加算する。"]],"red":["ウ","所定点数に それぞれ所定点","数の100 分の80、100 分の50 又は100 分の30 に相当する点数を加算する。","オ","100 分の50","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">新生児、３歳未満の乳幼児（新生児を除 く。）又は３歳以上６歳未満の幼児に対して断層撮影 を行った場合は、新生児加算、 乳幼児加算又は幼児加算として、<del>1,600 点、1,000 点又は 600 点を</del>所定点数に<span class=\"ins\"> それぞれ所定点 数の 100 分の 80、100 分の 50 又は 100 分の 30 に相当する点数を</span>加算する。</div><div class=\"correctline\"><strong>正しい文：</strong> 新生児、３歳未満の乳幼児（新生児を除 く。）又は３歳以上６歳未満の幼児に対して断層撮影 を行った場合は、新生児加算、 乳幼児加算又は幼児加算として、所定点数に それぞれ所定点 数の 100 分の 80、100 分の 50 又は 100 分の 30 に相当する点数を加算する。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">負荷試験を行った場合は、負荷の種類又は測定回数にかかわらず、断層撮影負荷試験加算とし て、所定点数の 100 分の <del>8</del><span class=\"ins\">5</span>0 に相当する点数を加算する。</div><div class=\"correctline\"><strong>正しい文：</strong> 負荷試験を行った場合は、負荷の種類又は測定回数にかかわらず、断層撮影負荷試験加算とし て、所定点数の 100 分の 50 に相当する点数を加算する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":44,"body":"第 44 問 ポジトロン断層・コンピューター断層複合撮影について、次の中から誤っている文章の\n       組み合わせをを選びなさい。","options":["ア 18ＦＤＧを用いた場合（一連の検査につき） 8,625 点が加算される。","イ 18Ｆ標識フルシクロビンを用いた場合（一連の検査につき） 3,905 点が加算される。","ウ アミロイドＰＥＴイメージング剤で放射性医薬品合成設備を用いた場合、13.625 点が加算さ\n  れる。","エ 別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生局長等に届け出た保険\n  医療機関以外の保険医療機関において行われる場合は、所定点数の 100 分の 80 に相当する\n  点数により算定する。","オ 地方厚生局長等に届け出た保険医療機関において行われる場合、新生児、３歳未満の乳幼児\n  （新生児を除く。）又は３歳以上６歳未満の幼児に対して断層撮影を行った場合は、新生児加\n  算、 乳幼児加算又は幼児加算として、1,280 点、800 点又は 480 点を所定点数に加算する。"],"correct":3,"correct_text":"3 イ、オ","changed":[["イ","18Ｆ標識フルシクロビンを用いた場合（一連の検査につき） 3,905 点が加算される。","18Ｆ標識フルシクロビンを用いた場合（一連の検査につき） 3,625 点が加算される。"],["オ","地方厚生局長等に届け出た保険医療機関において行われる場合、新生児、３歳未満の乳幼児 （新生児を除く。）又は３歳以上６歳未満の幼児に対して断層撮影を行った場合は、新生児加 算、 乳幼児加算又は幼児加算として、1,280 点、800 点又は 480 点を所定点数に加算する。","地方厚生局長等に届け出た保険医療機関において行われる場合、新生児、３歳未満の乳幼児 （新生児を除く。）又は３歳以上６歳未満の幼児に対して断層撮影を行った場合は、新生児加 算、 乳幼児加算又は幼児加算として 1,600 点、1,000 点又は 600 点を所定点数に加算する。"]],"red":["イ","3,625","オ","1,600 点、1,000 点又は600 点","3 イ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">18Ｆ標識フルシクロビンを用いた場合（一連の検査につき） 3,<del>90</del><span class=\"ins\">62</span>5 点が加算される。</div><div class=\"correctline\"><strong>正しい文：</strong> 18Ｆ標識フルシクロビンを用いた場合（一連の検査につき） 3,625 点が加算される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">地方厚生局長等に届け出た保険医療機関において行われる場合、新生児、３歳未満の乳幼児 （新生児を除く。）又は３歳以上６歳未満の幼児に対して断層撮影を行った場合は、新生児加 算、 乳幼児加算又は幼児加算として<del>、</del><span class=\"ins\"> </span>1,<del>28</del><span class=\"ins\">60</span>0 点、<del>8</del><span class=\"ins\">1,0</span>00 点又は <del>48</del><span class=\"ins\">60</span>0 点を所定点数に加算する。</div><div class=\"correctline\"><strong>正しい文：</strong> 地方厚生局長等に届け出た保険医療機関において行われる場合、新生児、３歳未満の乳幼児 （新生児を除く。）又は３歳以上６歳未満の幼児に対して断層撮影を行った場合は、新生児加 算、 乳幼児加算又は幼児加算として 1,600 点、1,000 点又は 600 点を所定点数に加算する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","オ"],"required":2},{"id":45,"body":"第 45 問 コンピューター断層撮影（ＣＴ撮影）について、次の中から誤っている文章の組み合わ\n       せをを選びなさい。","options":["ア 128 列以上のマルチスライス型の機器を使用した場合、共同利用施設において行われる場合、\n  1,020 点加算される。","イ 64 列以上 128 列未満のマルチスライス型の機器を使用した場合、共同利用施設において行わ\n  れる場合 900 点、16 列以上 64 列未満のマルチスライス型の機器による場合 750 点が加算さ\n  れる。","ウ ＣＴ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生局\n  長等に届け出た保険医療機関において、冠動脈のＣＴ撮影を行った場合は、冠動脈ＣＴ撮影加\n  算として、600 点を所定点数に加算する。","エ ＣＴ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生局\n  長等に届け出た保険医療機関において、全身外傷に対して行った場合には、外傷全身ＣＴ加算\n  として、800 点を所定点数に加算する。","オ ＣＴ撮影の６４列以上のマルチスライス型の機器又は１６列以上６４列未満のマルチスライス\n  型について、別に厚生労働大臣が定める施設基準を満たす保険医療機関において、大腸のＣＴ\n  撮影（炭酸ガス等の注入を含む。）を行った場合は、大腸ＣＴ撮影加算として、それぞれ 620\n  点又は 500 点を所定点数に加算する。"],"correct":1,"correct_text":"１ ア、イ","changed":[["ア","128 列以上のマルチスライス型の機器を使用した場合、共同利用施設において行われる場合、 1,020 点加算される。","128 列以上のマルチスライス型の機器を使用した場合、共同利用施設において行われる場合、 1,120 点加算される。"],["イ","64 列以上 128 列未満のマルチスライス型の機器を使用した場合、共同利用施設において行わ れる場合 900 点、16 列以上 64 列未満のマルチスライス型の機器による場合 750 点が加算さ れる。","64 列以上 128 列未満のマルチスライス型の機器を使用した場合、共同利用施設において行わ れる場合 1020 点、16 列以上 64 列未満のマルチスライス型の機器による場合 900 点が加算 される。"]],"red":["ア","1,120 点","イ","1020 点","900 点","１ ア、イ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ア、イ</div><div class=\"diffblock\"><div class=\"difflabel\">ア</div><div class=\"diffline\">128 列以上のマルチスライス型の機器を使用した場合、共同利用施設において行われる場合、 1,<del>0</del><span class=\"ins\">1</span>20 点加算される。</div><div class=\"correctline\"><strong>正しい文：</strong> 128 列以上のマルチスライス型の機器を使用した場合、共同利用施設において行われる場合、 1,120 点加算される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">64 列以上 128 列未満のマルチスライス型の機器を使用した場合、共同利用施設において行わ れる場合 <del>9</del><span class=\"ins\">1</span>0<span class=\"ins\">2</span>0 点、16 列以上 64 列未満のマルチスライス型の機器による場合 <del>75</del><span class=\"ins\">90</span>0 点が加算<span class=\"ins\"> </span>さ<del> </del>れる。</div><div class=\"correctline\"><strong>正しい文：</strong> 64 列以上 128 列未満のマルチスライス型の機器を使用した場合、共同利用施設において行わ れる場合 1020 点、16 列以上 64 列未満のマルチスライス型の機器による場合 900 点が加算 される。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ア","イ"],"required":2},{"id":46,"body":"第 46 問 磁気共鳴コンピューター断層撮影（ＭＲＩ撮影）について、正しい組み合わせをを選び\n       なさい。\n１ ３テスラ以上の機器による場合\n    イ 共同利用施設において行われる場合 【ア】 点\n    ロ その他の場合 【イ】 点\n２ １．５テスラ以上３テスラ未満の機器による場合 【ウ】 点\n３ 「１」又は「２」以外の場合 【エ】 点","options":["ア：1,920     イ：1,900   ウ：1,530     エ：1,200","ア：1,820     イ：1,700   ウ：1,430     エ：1,000","ア：1,720     イ：1,700   ウ：1,330     エ：900","ア：1,620     イ：1,600   ウ：1,330     エ：900","ア：1,520     イ：1,500   ウ：1,230     エ：800"],"correct":3,"correct_text":"3． ア：1,720      イ：1,700      ウ：1,330      エ：900","changed":[],"red":["3． ア：1,720      イ：1,700      ウ：1,330      エ：900"],"explanation_html":"<div class=\"answerline\"><strong>正解：</strong> 3. ア：1,720 イ：1,700 ウ：1,330 エ：900</div>","mode":"single"},{"id":47,"body":"第 47 問 磁気共鳴コンピューター断層撮影（ＭＲＩ撮影）について、次の中から誤っている文章\n       の組み合わせをを選びなさい。","options":["ア ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生\n  局長等に届け出た保険医療機関において、心臓のＭＲＩ撮影を行った場合は、心臓ＭＲＩ撮影\n  加算として、400 点を所定点数に加算する。","イ ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生\n  局長等に届け出た保険医療機関において、乳房のＭＲＩ撮影を行った場合は、乳房ＭＲＩ撮影\n  加算として、100 点を所定点数に加算する。","ウ ＭＲＩ撮影について、別に厚生労働大臣の定める施設基準に適合しているものとして地方厚生\n  局長等に届け出た保険医療機関において、１５歳未満の小児に対して、麻酔 を用いて鎮静を\n  行い、１回で複数の領域を一連で撮影した場合は、小児鎮静下ＭＲＩ撮影加算として、当該撮\n  影の所定点数に 100 分の 80 に相当する点数を加算する。","エ ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生\n  局長等に届け出た保険医療機関において、全身のＭＲＩ撮影を行った場合は、全身ＭＲＩ撮影\n  加算として、800 点を所定点数に加算する。","オ ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生\n  局長等に届け出た保険医療機関において、肝エラストグラフィを行った場合は、肝エラストグ\n  ラフィ加算として、300 点を所定点数に加算する。"],"correct":5,"correct_text":"5 エ、オ","changed":[["エ","ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、全身のＭＲＩ撮影を行った場合は、全身ＭＲＩ撮影 加算として、800 点を所定点数に加算する。","ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、全身のＭＲＩ撮影を行った場合は、全身ＭＲＩ撮影 加算として、600 点を所定点数に加算する。"],["オ","ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、肝エラストグラフィを行った場合は、肝エラストグ ラフィ加算として、300 点を所定点数に加算する。","ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、肝エラストグラフィを行った場合は、肝エラストグ ラフィ加算として、600 点を所定点数に加算する。"]],"red":["エ","600 点","オ","600 点","5 エ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>エ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">エ</div><div class=\"diffline\">ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、全身のＭＲＩ撮影を行った場合は、全身ＭＲＩ撮影 加算として、<del>8</del><span class=\"ins\">6</span>00 点を所定点数に加算する。</div><div class=\"correctline\"><strong>正しい文：</strong> ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、全身のＭＲＩ撮影を行った場合は、全身ＭＲＩ撮影 加算として、600 点を所定点数に加算する。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、肝エラストグラフィを行った場合は、肝エラストグ ラフィ加算として、<del>3</del><span class=\"ins\">6</span>00 点を所定点数に加算する。</div><div class=\"correctline\"><strong>正しい文：</strong> ＭＲＩ撮影について、別に厚生労働大臣が定める施設基準に適合しているものとして地方厚生 局長等に届け出た保険医療機関において、肝エラストグラフィを行った場合は、肝エラストグ ラフィ加算として、600 点を所定点数に加算する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["エ","オ"],"required":2},{"id":48,"body":"第 48 問 次の中から正しい組み合わせをを選びなさい。\n１ 甲状腺癌に対するもの 【ア】 点\n２ 甲状腺機能亢進症に対するもの 【イ】 点\n３ 固形癌⾻転移による疼痛に対するもの 【ウ】 点\n４ Ｂ細胞性非ホジキンリンパ腫に対するもの 【エ】 点\n５ ⾻転移のある去勢抵抗性前立腺癌に対するもの\n   イ   ⾻転移のあるもの 【オ】 点\n   ロ PSMA 陽性であって遠隔転移を有するもの 【カ】 点\n６ 神経内分泌腫瘍に対するもの 【キ】 点\n７ 褐⾊細胞腫に対するもの 【ク】 点\n８ 神経芽腫に対するもの          【コ】 点","options":["ア：1,490 イ：1,490 ウ：1,600 エ：2,600 オ：2,700 カ：3,000 キ：2,660 ク:1,920 コ:3,800","ア：1,390 イ：1,390 ウ：1,700 エ：3,000 オ：2,630 カ：3,000 キ：2,660 ク:1,820 コ:3,800","ア：1,390 イ：1,390 ウ：1,800 エ：3,000 オ：2,700 カ：3,000 キ：2,760 ク:1,820 コ:3,800","ア：1,290 イ：1,290 ウ：1,700 エ：2,800 オ：2,500 カ：3,200 キ：2,660 ク:1,920 コ:3,600","ア：1,490 イ：1,490 ウ：1,650 エ：3,200 オ：2,550 カ：2,800 キ：2,760 ク:1,920 コ:3,600"],"correct":2,"correct_text":"2． ア：1,390 イ：1,390 ウ：1,700 エ：3,000 オ：2,630 カ：3,000 キ：2,660 ク:1,820 コ:3,800","changed":[],"red":["2． ア：1,390 イ：1,390 ウ：1,700 エ：3,000 オ：2,630 カ：3,000 キ：2,660 ク:1,820 コ:3,800"],"explanation_html":"<div class=\"answerline\"><strong>正解：</strong> 2. ア：1,390 イ：1,390 ウ：1,700 エ：3,000 オ：2,630 カ：3,000 キ：2,660 ク:1,820 コ:3,800</div>","mode":"single"},{"id":49,"body":"第 49 問 次の中から誤っている文章を2つ選びなさい。","options":["ア ガンマナイフによる定位放射線治療を行った場合、50,000 点が加算される。","イ 直線加速器による放射線治療で定位放射線治療の場合、一連につき 63,000 点が加算される。","ウ 希少な疾病に対して実施した場合で重粒子線治療を行った場合、110,000 点が加算される。","エ 造⾎幹細胞移植を目的とした全身照射を行った場合、30,000 点が加算される。","オ ホウ素中性子捕捉療法を行った場合、一連につき 110,000 点が加算される。"],"correct":4,"correct_text":"4 ウ、オ","changed":[["ウ","希少な疾病に対して実施した場合で重粒子線治療を行った場合、110,000 点が加算される。","希少な疾病に対して実施した場合で重粒子線治療を行った場合、187,500 点が加算される。"],["オ","ホウ素中性子捕捉療法を行った場合、一連につき 110,000 点が加算される。","ホウ素中性子捕捉療法を行った場合、一連につき 187,500 点が加算される。"]],"red":["ウ","187,500 点","オ","187,500 点","4 ウ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>ウ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">ウ</div><div class=\"diffline\">希少な疾病に対して実施した場合で重粒子線治療を行った場合、1<del>10</del><span class=\"ins\">87</span>,<del>0</del><span class=\"ins\">5</span>00 点が加算される。</div><div class=\"correctline\"><strong>正しい文：</strong> 希少な疾病に対して実施した場合で重粒子線治療を行った場合、187,500 点が加算される。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">ホウ素中性子捕捉療法を行った場合、一連につき 1<del>10</del><span class=\"ins\">87</span>,<del>0</del><span class=\"ins\">5</span>00 点が加算される。</div><div class=\"correctline\"><strong>正しい文：</strong> ホウ素中性子捕捉療法を行った場合、一連につき 187,500 点が加算される。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["ウ","オ"],"required":2},{"id":50,"body":"第 50 問 次の中から誤っている文章を2つ選びなさい。","options":["ア 乳癌に対する全乳房照射を行った場合、41,500 点が加算される。","イ 乳癌に対する全乳房照射について、治療を取りやめた等の場合においては、9 回目までは\n  10.500 点、10 回目以上までは 14,000 点を一連として所定点数に代えて算定する。","ウ 前立腺癌に対する前立腺照射を行った場合、96,500 点が加算される。","エ 術中照射療法を行った場合は、術中照射療法加算として、患者一人につき一日を限度として、\n  5,000 点を所定点数に加算する。","オ 前立腺癌に対する前立腺照射について、治療を取りやめた等の場合においては、7 回目までは\n  24,000 点、8 回目以上まで 42,000 点を一連として所定点数に代えて算定する。"],"correct":3,"correct_text":"3 イ、オ","changed":[["イ","乳癌に対する全乳房照射について、治療を取りやめた等の場合においては、9 回目までは 10.500 点、10 回目以上までは 14,000 点を一連として所定点数に代えて算定する。","乳癌に対する全乳房照射について、治療を取りやめた等の場合においては、7 回目までは 10.500 点、8 回目以上までは 14,000 点を一連として所定点数に代えて算定する。"],["オ","前立腺癌に対する前立腺照射について、治療を取りやめた等の場合においては、7 回目までは 24,000 点、8 回目以上まで 42,000 点を一連として所定点数に代えて算定する。","前立腺癌に対する前立腺照射について、治療を取りやめた等の場合においては、9 回目までは 24,000 点、10 回目以上まで 42,000 点を一連として所定点数に代えて算定する。"]],"red":["イ","7","8","オ","9","10","3 イ、オ"],"explanation_html":"<div class=\"answerline\"><strong>誤っている項目：</strong>イ、オ</div><div class=\"diffblock\"><div class=\"difflabel\">イ</div><div class=\"diffline\">乳癌に対する全乳房照射について、治療を取りやめた等の場合においては、<del>9</del><span class=\"ins\">7</span> 回目までは 10.500 点、<del>10</del><span class=\"ins\">8</span> 回目以上までは 14,000 点を一連として所定点数に代えて算定する。</div><div class=\"correctline\"><strong>正しい文：</strong> 乳癌に対する全乳房照射について、治療を取りやめた等の場合においては、7 回目までは 10.500 点、8 回目以上までは 14,000 点を一連として所定点数に代えて算定する。</div></div><div class=\"diffblock\"><div class=\"difflabel\">オ</div><div class=\"diffline\">前立腺癌に対する前立腺照射について、治療を取りやめた等の場合においては、<del>7</del><span class=\"ins\">9</span> 回目までは 24,000 点、<del>8</del><span class=\"ins\">10</span> 回目以上まで 42,000 点を一連として所定点数に代えて算定する。</div><div class=\"correctline\"><strong>正しい文：</strong> 前立腺癌に対する前立腺照射について、治療を取りやめた等の場合においては、9 回目までは 24,000 点、10 回目以上まで 42,000 点を一連として所定点数に代えて算定する。</div></div>","mode":"statements","option_labels":["ア","イ","ウ","エ","オ"],"correct_labels":["イ","オ"],"required":2}];
-function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c));}
-function clearFeedback(card,form){
-  form.querySelectorAll('.opt').forEach(x=>x.classList.remove('correct','incorrect','sel','correct-answer'));
-  card.querySelectorAll('.score,.explain').forEach(x=>x.remove());
+function esc(s){
+  return String(s).replace(/[&<>"]/g,function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||ch;
+  });
 }
+
+let currentIndex=0;
+const state=DATA.map(function(){return {graded:false,correct:null};});
+
+function getCard(index){return document.querySelector('.card[data-index="'+index+'"]');}
+function getCurrentCard(){return getCard(currentIndex);}
+
+function clearFeedback(card,form){
+  form.querySelectorAll('.opt').forEach(function(x){x.classList.remove('correct','incorrect','sel','correct-answer');});
+  card.querySelectorAll('.score,.explain-details').forEach(function(x){x.remove();});
+}
+
+function hasAnswer(q,form){
+  if(q.mode==='statements') return form.querySelectorAll('input[type="checkbox"]:checked').length>0;
+  return !!form.querySelector('input[type="radio"]:checked');
+}
+
 function render(){
- const app=document.getElementById('app'); app.innerHTML='';
- DATA.forEach(q=>{
-  const card=document.createElement('section');card.className='card';card.dataset.qid=q.id;
-  const h=document.createElement('div');h.className='title';h.textContent=q.body;card.appendChild(h);
-  const form=document.createElement('div');form.className='question-options';
-  if(q.mode==='statements'){
-    q.options.forEach((text,idx)=>{
-      const label=document.createElement('label');label.className='opt';label.dataset.letter=q.option_labels[idx];label.dataset.originalIndex=idx;
-      const cb=document.createElement('input');cb.type='checkbox';cb.name=`q_${q.id}`;cb.value=q.option_labels[idx];
-      // 指定数を超える選択だけ防止し、採点は「採点」ボタンで行う
-      cb.addEventListener('change',()=>{
-        const checked=[...form.querySelectorAll('input[type="checkbox"]:checked')];
-        if(checked.length>q.required){cb.checked=false;}
-        clearFeedback(card,form);
+  const app=document.getElementById('app');
+  app.innerHTML='';
+  DATA.forEach(function(q,index){
+    const card=document.createElement('section');
+    card.className='card';
+    card.dataset.qid=q.id;
+    card.dataset.index=index;
+
+    const chip=document.createElement('div');
+    chip.className='question-chip';
+    chip.textContent='問 '+(index+1)+' / '+DATA.length;
+    card.appendChild(chip);
+
+    const h=document.createElement('div');
+    h.className='title';
+    h.textContent=q.body;
+    card.appendChild(h);
+
+    const form=document.createElement('div');
+    form.className='question-options';
+
+    if(q.mode==='statements'){
+      q.options.forEach(function(text,idx){
+        const label=document.createElement('label');
+        label.className='opt';
+        label.dataset.letter=q.option_labels[idx];
+        label.dataset.originalIndex=idx;
+
+        const cb=document.createElement('input');
+        cb.type='checkbox';
+        cb.name='q_'+q.id;
+        cb.value=q.option_labels[idx];
+        cb.addEventListener('change',function(){
+          const checked=[].slice.call(form.querySelectorAll('input[type="checkbox"]:checked'));
+          if(checked.length>q.required) cb.checked=false;
+          state[index].graded=false;
+          state[index].correct=null;
+          clearFeedback(card,form);
+          updateUI();
+        });
+
+        const span=document.createElement('div');
+        span.textContent=text;
+        label.appendChild(cb);
+        label.appendChild(span);
+        form.appendChild(label);
       });
-      const span=document.createElement('div');span.textContent=text;
-      label.appendChild(cb);label.appendChild(span);form.appendChild(label);
-    });
-  }else{
-    q.options.forEach((text,idx)=>{
-      const label=document.createElement('label');label.className='opt';label.dataset.original=idx+1;label.dataset.originalIndex=idx;
-      const r=document.createElement('input');r.type='radio';r.name=`q_${q.id}`;r.value=idx+1;
-      r.addEventListener('change',()=>clearFeedback(card,form));
-      const span=document.createElement('div');span.innerHTML=`<strong>${idx+1}.</strong> ${esc(text)}`;
-      label.appendChild(r);label.appendChild(span);form.appendChild(label);
-    });
-  }
-  card.appendChild(form);
+    }else{
+      q.options.forEach(function(text,idx){
+        const label=document.createElement('label');
+        label.className='opt';
+        label.dataset.original=idx+1;
+        label.dataset.originalIndex=idx;
 
-  const controls=document.createElement('div');controls.className='controls';
+        const r=document.createElement('input');
+        r.type='radio';
+        r.name='q_'+q.id;
+        r.value=idx+1;
+        r.addEventListener('change',function(){
+          state[index].graded=false;
+          state[index].correct=null;
+          clearFeedback(card,form);
+          updateUI();
+        });
 
-  const grade=document.createElement('button');
-  grade.textContent='採点';
-  grade.onclick=()=>{
-    if(q.mode==='statements') gradeStatements(q,card,form);
-    else gradeSingle(q,card,form);
-  };
+        const span=document.createElement('div');
+        span.innerHTML='<strong>'+(idx+1)+'.</strong> '+esc(text);
+        label.appendChild(r);
+        label.appendChild(span);
+        form.appendChild(label);
+      });
+    }
+    card.appendChild(form);
 
-  const reset=document.createElement('button');
-  reset.textContent='リセット';
-  reset.className='secondary';
-  reset.onclick=()=>resetCard(card,form);
+    const rr=document.createElement('div');
+    rr.className='question-reset-row';
+    const reset=document.createElement('button');
+    reset.type='button';
+    reset.className='question-reset';
+    reset.textContent='この問題をリセット';
+    reset.addEventListener('click',function(){resetCard(card,form,index);});
+    rr.appendChild(reset);
+    card.appendChild(rr);
 
-  controls.append(grade,reset);card.appendChild(controls);app.appendChild(card);
- });
- const note=document.createElement('div');note.className='footer';note.textContent='※ 問題文・正答・解説は、添付された「問題文用」「解答・解説用」資料を基に作成しています。';app.appendChild(note);
+    app.appendChild(card);
+  });
+
+  const note=document.createElement('div');
+  note.className='footer';
+  note.textContent='※ 問題文・正答・解説は、添付された「問題文用」「解答・解説用」資料を基に作成しています。';
+  app.appendChild(note);
+
+  buildQuestionGrid();
+  showQuestion(0,false);
 }
 
 function showMessage(card,text){
- const score=document.createElement('div');
- score.className='score';
- score.textContent=text;
- card.appendChild(score);
+  const score=document.createElement('div');
+  score.className='score';
+  score.textContent=text;
+  card.appendChild(score);
 }
 
-function gradeStatements(q,card,form){
+function addExplanation(card,q,answerHtml){
+  const details=document.createElement('details');
+  details.className='explain-details';
+  details.open=true;
+  const summary=document.createElement('summary');
+  summary.textContent='解説を開く／閉じる';
+  const exp=document.createElement('div');
+  exp.className='explain';
+
+  const holder=document.createElement('div');
+  holder.innerHTML=q.explanation_html||'';
+  const oldAnswer=holder.querySelector('.answerline');
+  if(oldAnswer) oldAnswer.remove();
+
+  const answer=document.createElement('div');
+  answer.className='answerline';
+  answer.innerHTML=answerHtml;
+  exp.appendChild(answer);
+  while(holder.firstChild) exp.appendChild(holder.firstChild);
+
+  details.appendChild(summary);
+  details.appendChild(exp);
+  card.appendChild(details);
+}
+
+function gradeStatements(q,card,form,index){
   clearFeedback(card,form);
-  const checked=[...form.querySelectorAll('input[type="checkbox"]:checked')];
+  const checked=[].slice.call(form.querySelectorAll('input[type="checkbox"]:checked'));
   if(checked.length!==q.required){
-    showMessage(card,`⚠️ ${q.required}つ選択してから採点してください。`);
-    return;
+    showMessage(card,'⚠️ '+q.required+'つ選択してから採点してください。');
+    return false;
   }
-  const selected=new Set(checked.map(x=>x.value));
+  const selected=new Set(checked.map(function(x){return x.value;}));
   const target=new Set(q.correct_labels);
-  const exact=selected.size===target.size && [...target].every(x=>selected.has(x));
-  form.querySelectorAll('.opt').forEach(opt=>{
+  const exact=selected.size===target.size && [].slice.call(target).every(function(x){return selected.has(x);});
+
+  form.querySelectorAll('.opt').forEach(function(opt){
     const letter=opt.dataset.letter;
     const input=opt.querySelector('input');
     if(input.checked) opt.classList.add(target.has(letter)?'correct':'incorrect','sel');
     if(!exact && target.has(letter) && !input.checked) opt.classList.add('correct-answer');
   });
-  const score=document.createElement('div');score.className='score';score.textContent=exact?'✅ 正解！':'❌ 不正解';card.appendChild(score);
-  const exp=document.createElement('div');exp.className='explain';
-  const holder=document.createElement('div');holder.innerHTML=q.explanation_html||'';
-  const oldAnswer=holder.querySelector('.answerline');if(oldAnswer) oldAnswer.remove();
-  const answer=document.createElement('div');answer.className='answerline';answer.innerHTML=`<strong>正解：</strong> ${q.correct_labels.join('、')}`;
-  exp.appendChild(answer);while(holder.firstChild) exp.appendChild(holder.firstChild);card.appendChild(exp);
+
+  showMessage(card,exact?'✅ 正解！':'❌ 不正解');
+  addExplanation(card,q,'<strong>正解：</strong> '+q.correct_labels.join('、'));
+  state[index].graded=true;
+  state[index].correct=exact;
+  updateUI();
+  return true;
 }
 
-function gradeSingle(q,card,form){
- clearFeedback(card,form);
- const selected=form.querySelector('input[type="radio"]:checked');
- if(!selected){
-   showMessage(card,'⚠️ 選択肢を1つ選んでから採点してください。');
-   return;
- }
- const val=Number(selected.value);const selectedLabel=selected.closest('.opt');selectedLabel.classList.add(val===q.correct?'correct':'incorrect','sel');
- const correctLabel=form.querySelector(`.opt[data-original="${q.correct}"]`);if(correctLabel && val!==q.correct) correctLabel.classList.add('correct-answer');
- const score=document.createElement('div');score.className='score';score.textContent=val===q.correct?'✅ 正解！':'❌ 不正解';card.appendChild(score);
- const exp=document.createElement('div');exp.className='explain';
- const holder=document.createElement('div');holder.innerHTML=q.explanation_html||'';
- const oldAnswer=holder.querySelector('.answerline');if(oldAnswer) oldAnswer.remove();
- const answer=document.createElement('div');answer.className='answerline';answer.innerHTML=`<strong>正解：</strong> ${esc(q.options[q.correct-1]||'')}`;
- exp.appendChild(answer);while(holder.firstChild) exp.appendChild(holder.firstChild);card.appendChild(exp);
+function gradeSingle(q,card,form,index){
+  clearFeedback(card,form);
+  const selected=form.querySelector('input[type="radio"]:checked');
+  if(!selected){
+    showMessage(card,'⚠️ 選択肢を1つ選んでから採点してください。');
+    return false;
+  }
+  const val=Number(selected.value);
+  const exact=val===q.correct;
+  const selectedLabel=selected.closest('.opt');
+  selectedLabel.classList.add(exact?'correct':'incorrect','sel');
+
+  const correctLabel=form.querySelector('.opt[data-original="'+q.correct+'"]');
+  if(correctLabel && !exact) correctLabel.classList.add('correct-answer');
+
+  showMessage(card,exact?'✅ 正解！':'❌ 不正解');
+  addExplanation(card,q,'<strong>正解：</strong> '+esc(q.options[q.correct-1]||''));
+  state[index].graded=true;
+  state[index].correct=exact;
+  updateUI();
+  return true;
+}
+
+function gradeCurrent(){
+  const q=DATA[currentIndex];
+  const card=getCurrentCard();
+  if(!card) return;
+  const form=card.querySelector('.question-options');
+  const done=q.mode==='statements'
+    ? gradeStatements(q,card,form,currentIndex)
+    : gradeSingle(q,card,form,currentIndex);
+  if(done){
+    setTimeout(function(){
+      const result=card.querySelector('.score');
+      if(result) result.scrollIntoView({behavior:'smooth',block:'center'});
+    },40);
+  }
 }
 
 function shuffledCopy(items){
-  const a=[...items];
+  const a=items.slice();
   for(let i=a.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
+    const t=a[i];a[i]=a[j];a[j]=t;
   }
   return a;
 }
@@ -134,56 +414,143 @@ function shuffledCopy(items){
 function statementTextWithoutPrefix(q,idx){
   const original=q.options[idx]||'';
   const letter=(q.option_labels&&q.option_labels[idx])||'';
-  if(letter && original.startsWith(letter)){
-    return original.slice(letter.length).replace(/^\s+/, '');
-  }
-  return original.replace(/^[ア-ン]\s+/, '');
+  if(letter && original.startsWith(letter)) return original.slice(letter.length).replace(/^\s+/,'');
+  return original.replace(/^[ア-ン]\s+/,'');
 }
 
 function setQuestionShuffle(q,card,enabled){
   const form=card.querySelector('.question-options');
   if(!form) return;
-  resetCard(card,form);
-  let items=[...form.querySelectorAll('.opt')];
-  if(enabled){
-    items=shuffledCopy(items);
-    items.forEach(item=>form.appendChild(item));
-  }else{
-    items.sort((a,b)=>Number(a.dataset.originalIndex)-Number(b.dataset.originalIndex));
-    items.forEach(item=>form.appendChild(item));
-  }
+  let items=[].slice.call(form.querySelectorAll('.opt'));
+  if(enabled) items=shuffledCopy(items);
+  else items.sort(function(a,b){return Number(a.dataset.originalIndex)-Number(b.dataset.originalIndex);});
+  items.forEach(function(item){form.appendChild(item);});
 
-  form.querySelectorAll('.opt').forEach(opt=>{
+  form.querySelectorAll('.opt').forEach(function(opt){
     const idx=Number(opt.dataset.originalIndex);
     const span=opt.querySelector('div');
     if(q.mode==='statements'){
-      // シャッフル中は「ア」「イ」など、元の選択肢記号を隠す。
-      span.textContent=enabled ? statementTextWithoutPrefix(q,idx) : (q.options[idx]||'');
+      span.textContent=enabled?statementTextWithoutPrefix(q,idx):(q.options[idx]||'');
     }else{
-      // 数値5択等も、シャッフル中は元の「1.」「2.」を隠す。
-      span.innerHTML=enabled ? esc(q.options[idx]||'') : `<strong>${idx+1}.</strong> ${esc(q.options[idx]||'')}`;
+      span.innerHTML=enabled?esc(q.options[idx]||''):'<strong>'+(idx+1)+'.</strong> '+esc(q.options[idx]||'');
     }
   });
   form.dataset.shuffled=enabled?'true':'false';
 }
 
 function setGlobalShuffle(enabled){
-  DATA.forEach(q=>{
-    const card=document.querySelector(`.card[data-qid="${q.id}"]`);
+  DATA.forEach(function(q,index){
+    const card=getCard(index);
     if(card) setQuestionShuffle(q,card,enabled);
   });
 }
 
-function resetCard(card,form){
- form.querySelectorAll('input').forEach(x=>x.checked=false);
- clearFeedback(card,form);
+function resetCard(card,form,index){
+  form.querySelectorAll('input').forEach(function(x){x.checked=false;});
+  clearFeedback(card,form);
+  state[index].graded=false;
+  state[index].correct=null;
+  updateUI();
+}
+
+function resetAll(){
+  DATA.forEach(function(q,index){
+    const card=getCard(index);
+    if(!card) return;
+    resetCard(card,card.querySelector('.question-options'),index);
+  });
+  showQuestion(0,true);
+}
+
+function getAnsweredCount(){
+  let count=0;
+  DATA.forEach(function(q,index){
+    const card=getCard(index);
+    if(card && hasAnswer(q,card.querySelector('.question-options'))) count++;
+  });
+  return count;
+}
+
+function showQuestion(index,scrollTop){
+  if(index<0 || index>=DATA.length) return;
+  currentIndex=index;
+  document.querySelectorAll('.card').forEach(function(c){c.classList.remove('active');});
+  const card=getCurrentCard();
+  if(card) card.classList.add('active');
+  if(scrollTop!==false) window.scrollTo({top:0,behavior:'smooth'});
+  updateUI();
+}
+
+function updateUI(){
+  const pct=((currentIndex+1)/DATA.length)*100;
+  document.getElementById('progressText').textContent='問 '+(currentIndex+1)+' / '+DATA.length;
+  document.getElementById('answeredText').textContent='回答 '+getAnsweredCount()+' / '+DATA.length;
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('prevBtn').disabled=currentIndex===0;
+  document.getElementById('nextBtn').disabled=currentIndex===DATA.length-1;
+
+  const grid=document.getElementById('questionGrid');
+  if(grid){
+    [].slice.call(grid.querySelectorAll('.qjump')).forEach(function(btn,index){
+      btn.classList.remove('answered','correct','wrong','current');
+      if(index===currentIndex) btn.classList.add('current');
+      const card=getCard(index);
+      if(state[index].graded){
+        btn.classList.add(state[index].correct?'correct':'wrong');
+      }else if(card && hasAnswer(DATA[index],card.querySelector('.question-options'))){
+        btn.classList.add('answered');
+      }
+    });
+  }
+}
+
+function buildQuestionGrid(){
+  const grid=document.getElementById('questionGrid');
+  grid.innerHTML='';
+  DATA.forEach(function(q,index){
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='qjump';
+    b.textContent=index+1;
+    b.addEventListener('click',function(){
+      closeQuestionList();
+      showQuestion(index,true);
+    });
+    grid.appendChild(b);
+  });
+}
+
+function openQuestionList(){
+  const overlay=document.getElementById('questionOverlay');
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  updateUI();
+}
+
+function closeQuestionList(){
+  const overlay=document.getElementById('questionOverlay');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
 }
 
 render();
-const globalShuffle=document.getElementById('globalShuffle');
-if(globalShuffle){
- globalShuffle.addEventListener('change',()=>setGlobalShuffle(globalShuffle.checked));
-}
+
+document.getElementById('prevBtn').addEventListener('click',function(){showQuestion(currentIndex-1,true);});
+document.getElementById('nextBtn').addEventListener('click',function(){showQuestion(currentIndex+1,true);});
+document.getElementById('gradeBtn').addEventListener('click',gradeCurrent);
+document.getElementById('questionListBtn').addEventListener('click',openQuestionList);
+document.getElementById('closeQuestionListBtn').addEventListener('click',closeQuestionList);
+document.getElementById('questionOverlay').addEventListener('click',function(e){if(e.target===this) closeQuestionList();});
+document.getElementById('globalShuffle').addEventListener('change',function(){setGlobalShuffle(this.checked);});
+document.getElementById('resetAllBtn').addEventListener('click',function(){
+  if(confirm('全50問の回答をリセットしますか？')) resetAll();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') closeQuestionList();
+});
+
 </script>
 </body>
 </html>
