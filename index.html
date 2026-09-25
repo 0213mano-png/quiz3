@@ -212,6 +212,13 @@ function cleanOptionText(s){
   return t.trim();
 }
 
+function cleanSingleOptionText(s){
+  return String(s||'')
+    .replace(/\r?\n\s*/g,' ')
+    .replace(/[ \t]{2,}/g,' ')
+    .trim();
+}
+
 let currentIndex=0;
 const state=DATA.map(function(){return {graded:false,correct:null};});
 
@@ -295,7 +302,7 @@ function render(){
         });
 
         const span=document.createElement('div');
-        span.innerHTML='<strong>'+(idx+1)+'.</strong> '+esc(cleanOptionText(text));
+        span.innerHTML='<strong>'+(idx+1)+'.</strong> '+esc(cleanSingleOptionText(text));
         label.appendChild(r);
         label.appendChild(span);
         form.appendChild(label);
@@ -359,24 +366,37 @@ function addExplanation(card,q,answerHtml){
 
 function gradeStatements(q,card,form,index){
   clearFeedback(card,form);
-  const checked=[].slice.call(form.querySelectorAll('input[type="checkbox"]:checked'));
+  const checked=[].slice.call(form.querySelectorAll('input[type=\"checkbox\"]:checked'));
   if(checked.length!==q.required){
     showMessage(card,'⚠️ '+q.required+'つ選択してから採点してください。');
     return false;
   }
-  const selected=new Set(checked.map(function(x){return x.value;}));
-  const target=new Set(q.correct_labels);
-  const exact=selected.size===target.size && [].slice.call(target).every(function(x){return selected.has(x);});
+
+  const selected=checked.map(function(x){return x.value;});
+  const correct=(q.correct_labels||[]).slice();
+
+  // 必要数・正答数・選択内容がすべて一致したときだけ正解。
+  // 1つだけ正しい場合などの部分正解は認めない。
+  const exact=
+    selected.length===q.required &&
+    correct.length===q.required &&
+    selected.every(function(x){return correct.includes(x);}) &&
+    correct.every(function(x){return selected.includes(x);});
 
   form.querySelectorAll('.opt').forEach(function(opt){
     const letter=opt.dataset.letter;
     const input=opt.querySelector('input');
-    if(input.checked) opt.classList.add(target.has(letter)?'correct':'incorrect','sel');
-    if(!exact && target.has(letter) && !input.checked) opt.classList.add('correct-answer');
+
+    if(exact){
+      if(input.checked) opt.classList.add('correct','sel');
+    }else{
+      if(input.checked) opt.classList.add('incorrect','sel');
+      if(!input.checked && correct.includes(letter)) opt.classList.add('correct-answer');
+    }
   });
 
   showMessage(card,exact?'✅ 正解！':'❌ 不正解');
-  addExplanation(card,q,'<strong>正解：</strong> '+q.correct_labels.join('、'));
+  addExplanation(card,q,'<strong>正解：</strong> '+correct.join('、'));
   state[index].graded=true;
   state[index].correct=exact;
   updateUI();
@@ -452,7 +472,7 @@ function setQuestionShuffle(q,card,enabled){
     if(q.mode==='statements'){
       span.textContent=enabled?statementTextWithoutPrefix(q,idx):cleanOptionText(q.options[idx]||'');
     }else{
-      span.innerHTML=enabled?esc(cleanOptionText(q.options[idx]||'')):'<strong>'+(idx+1)+'.</strong> '+esc(cleanOptionText(q.options[idx]||''));
+      span.innerHTML=enabled?esc(cleanSingleOptionText(q.options[idx]||'')):'<strong>'+(idx+1)+'.</strong> '+esc(cleanSingleOptionText(q.options[idx]||''));
     }
   });
   form.dataset.shuffled=enabled?'true':'false';
