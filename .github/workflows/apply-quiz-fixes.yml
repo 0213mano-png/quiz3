@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/apply-quiz-fixes.yml'
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -24,17 +24,19 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
-          # 1) 単一選択問題（問41・46・48など）は、数値と次の項目名の間の空白を保持する。
+          # Single-choice numeric questions should preserve separators between values.
           marker = "\nlet currentIndex=0;"
           if 'function cleanSingleOptionText' not in s:
-              helper = r'''
-function cleanSingleOptionText(s){
-  return String(s||'')
-    .replace(/\r?\n\s*/g,' ')
-    .replace(/[ \t]{2,}/g,' ')
-    .trim();
-}
-'''
+              helper = "\n".join([
+                  "",
+                  "function cleanSingleOptionText(s){",
+                  "  return String(s||'')",
+                  "    .replace(/\\r?\\n\\s*/g,' ')",
+                  "    .replace(/[ \\t]{2,}/g,' ')",
+                  "    .trim();",
+                  "}",
+                  "",
+              ])
               if marker not in s:
                   raise SystemExit('Could not find insertion point for cleanSingleOptionText')
               s = s.replace(marker, helper + marker, 1)
@@ -48,56 +50,56 @@ function cleanSingleOptionText(s){
               "span.innerHTML=enabled?esc(cleanSingleOptionText(q.options[idx]||'')):'<strong>'+(idx+1)+'.</strong> '+esc(cleanSingleOptionText(q.options[idx]||''));"
           )
 
-          # 2) 「2つ選べ」は2つとも完全一致した場合のみ正解。
+          # Two-choice questions are correct only when both selected answers exactly match.
           start = s.find('function gradeStatements(q,card,form,index){')
           end = s.find('\nfunction gradeSingle(q,card,form,index){', start)
           if start == -1 or end == -1:
               raise SystemExit('Could not locate gradeStatements')
 
-          new_grade = r'''function gradeStatements(q,card,form,index){
-  clearFeedback(card,form);
-  const checked=[].slice.call(form.querySelectorAll('input[type="checkbox"]:checked'));
-  if(checked.length!==q.required){
-    showMessage(card,'⚠️ '+q.required+'つ選択してから採点してください。');
-    return false;
-  }
-
-  const selected=checked.map(function(x){return x.value;});
-  const correct=(q.correct_labels||[]).slice();
-
-  // 必要数・正答数・選択内容がすべて一致したときだけ正解。
-  // 1つだけ正しい場合などの部分正解は認めない。
-  const exact=
-    selected.length===q.required &&
-    correct.length===q.required &&
-    selected.every(function(x){return correct.includes(x);}) &&
-    correct.every(function(x){return selected.includes(x);});
-
-  form.querySelectorAll('.opt').forEach(function(opt){
-    const letter=opt.dataset.letter;
-    const input=opt.querySelector('input');
-
-    if(exact){
-      if(input.checked) opt.classList.add('correct','sel');
-    }else{
-      // 設問全体が不正解なら、選択した項目は部分的に合っていても赤表示にする。
-      if(input.checked) opt.classList.add('incorrect','sel');
-      // 選び漏らした本来の正答のみ緑で示す。
-      if(!input.checked && correct.includes(letter)) opt.classList.add('correct-answer');
-    }
-  });
-
-  showMessage(card,exact?'✅ 正解！':'❌ 不正解');
-  addExplanation(card,q,'<strong>正解：</strong> '+correct.join('、'));
-  state[index].graded=true;
-  state[index].correct=exact;
-  updateUI();
-  return true;
-}
-'''
+          new_grade = "\n".join([
+              "function gradeStatements(q,card,form,index){",
+              "  clearFeedback(card,form);",
+              "  const checked=[].slice.call(form.querySelectorAll('input[type=\\\"checkbox\\\"]:checked'));",
+              "  if(checked.length!==q.required){",
+              "    showMessage(card,'⚠️ '+q.required+'つ選択してから採点してください。');",
+              "    return false;",
+              "  }",
+              "",
+              "  const selected=checked.map(function(x){return x.value;});",
+              "  const correct=(q.correct_labels||[]).slice();",
+              "",
+              "  // 必要数・正答数・選択内容がすべて一致したときだけ正解。",
+              "  // 1つだけ正しい場合などの部分正解は認めない。",
+              "  const exact=",
+              "    selected.length===q.required &&",
+              "    correct.length===q.required &&",
+              "    selected.every(function(x){return correct.includes(x);}) &&",
+              "    correct.every(function(x){return selected.includes(x);});",
+              "",
+              "  form.querySelectorAll('.opt').forEach(function(opt){",
+              "    const letter=opt.dataset.letter;",
+              "    const input=opt.querySelector('input');",
+              "",
+              "    if(exact){",
+              "      if(input.checked) opt.classList.add('correct','sel');",
+              "    }else{",
+              "      if(input.checked) opt.classList.add('incorrect','sel');",
+              "      if(!input.checked && correct.includes(letter)) opt.classList.add('correct-answer');",
+              "    }",
+              "  });",
+              "",
+              "  showMessage(card,exact?'✅ 正解！':'❌ 不正解');",
+              "  addExplanation(card,q,'<strong>正解：</strong> '+correct.join('、'));",
+              "  state[index].graded=true;",
+              "  state[index].correct=exact;",
+              "  updateUI();",
+              "  return true;",
+              "}",
+              "",
+          ])
           s = s[:start] + new_grade + s[end:]
 
-          # 3) 厚労省資料で確認できた正答値がデータ内にあることを確認。
+          # Verified current values from MHLW materials.
           verified = [
               '［診断料］170 点 ［撮影料］136 点',
               'ア：1,720     イ：1,700   ウ：1,330     エ：900',
